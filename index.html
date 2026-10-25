@@ -64,14 +64,16 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,52px);lin
 .controls{display:grid;gap:10px;padding:14px 18px 16px;border-top:1px solid var(--line)}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 button{font:inherit;cursor:pointer;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 12px}
-button:hover{border-color:var(--accent)}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #play{background:var(--accent);color:var(--panel);border-color:var(--accent);font-weight:600;min-width:84px}
 .track{position:relative;flex:1;min-width:220px}
 #t{width:100%;accent-color:var(--accent)}
 .ticks{position:relative;height:18px;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
-@media (max-width:760px){.ticks span.minor{display:none}}
+@media (max-width:760px){.ticks span:not(.ph):not(.tab){display:none}}
+@media (max-width:560px){.ticks span.tab{display:none}}
 .era-band{position:relative;height:6px;border-radius:3px;overflow:hidden;display:flex;margin:0 8px}
 .era-band i{display:block;height:100%}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -99,6 +101,9 @@ section.today h2{font-family:var(--display);font-size:clamp(24px,3.4vw,34px);mar
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:10px;min-width:0;align-content:start}
 .card.explorer{grid-column:1/-1}
+.today-body{display:grid;gap:18px}
+.teaser{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:8px;justify-items:start}
+.teaser p{margin:0;color:var(--muted);max-width:60ch}
 .grid2.inner{gap:24px}
 .col{display:grid;gap:8px;align-content:start;min-width:0}
 select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 8px;max-width:220px}
@@ -175,6 +180,8 @@ select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid va
   </div>
 
   <section class="today">
+    <div class="teaser" id="teaser"><div class="eyebrow">Migration now</div><p>Move the timeline to the present to see where the world’s 304 million migrants live today, and explore any country’s diaspora.</p><button type="button" id="jumpToday">Jump to today</button></div>
+    <div class="today-body" id="todayBody" hidden>
     <div class="eyebrow">Migration now</div>
     <h2>Who has moved, and where they live</h2>
     <div class="kpis">
@@ -192,6 +199,7 @@ select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid va
       <div class="card"><h3>Biggest regional corridors</h3><div class="src">Millions · UN DESA 2024</div><div class="flows" id="f-reg"></div></div>
       <div class="card"><h3>Global migrant stock</h3><div class="src">Millions · UN DESA via IOM World Migration Report 2026, Table 1</div><svg id="stock" viewBox="0 0 360 170"></svg></div>
       <div class="card"><h3>Money sent home</h3><div class="src">Top recipients · US$ billions · World Bank 2024. In 2025 India passed $150B (IOM WMR 2026).</div><div class="bars" id="b-rem"></div><div class="src">Top senders · US$ billions · 2025 (IOM WMR 2026)</div><div class="bars" id="b-send"></div></div>
+    </div>
     </div>
     <p class="caveat">About the map: from 540 to about 2 million years ago the map shows the PALEOMAP paleo-elevation models of Scotese and Wright (2018), one every 5 million years, blended in between. They show where land, shallow seas and mountains were at each time, at 1° resolution. Reconstructions before about 200 million years ago are less certain because the seafloor that recorded plate motions has since been destroyed. After that, the map uses today's coastlines; ice-age sea levels are not drawn. Line widths after 1500 are proportional to the number of people where a source gives a count; dashed branches have no count of their own. Prehistoric routes are generalized paths through dated archaeological and genetic sites, and several dates, especially the first arrivals in Australia and the Americas, are still debated.</p>
     <div class="sources">
@@ -536,6 +544,7 @@ function periodText(y){
 }
 
 // ---------- render ----------
+const todayBody=document.getElementById('todayBody'), teaserEl=document.getElementById('teaser');
 let last=-1;
 function render(y){
   const ageMa=y/1e6;
@@ -557,6 +566,7 @@ function render(y){
   });
   // routes
   const modernA=y<=40?Math.min(1,(40-y)/12):0; // corridors & diasporas fade in from ~1986
+  const showToday=y<=36.5; todayBody.hidden=!showToday; teaserEl.hidden=showToday;
   routeSel.each(function(r){
     const pr=deep&&ageMa>2.1?null:partial(r,y); const el=d3.select(this);
     if(!pr){el.attr('d',null);return;}
@@ -589,8 +599,8 @@ function setS(v,fromSlider){s=Math.max(0,Math.min(1,v)); if(!fromSlider) slider.
 slider.addEventListener('input',()=>{stop();touched=true;setS(slider.value/1000,true);});
 // ticks
 const tk=document.getElementById('ticks');
-[[5.4e8,'540 Ma'],[1e8,'100 Ma'],[1e7,'10 Ma'],[1e6,'1 Ma'],[1e5,'100k yrs'],[1.2e4,'10,000 BCE'],[ya(-3000),'3000 BCE'],[ya(1),'1 CE'],[ya(1000),'1000'],[ya(1500),'1500'],[ya(1800),'1800'],[ya(1900),'1900'],[ya(1990),'1990'],[0,'Now']].forEach(([y,l],i)=>{
-  const sp=document.createElement('span'); sp.textContent=l; if([2,4,7,9,12].includes(i)) sp.className='minor'; sp.style.left=`calc(${y2s(y)*100}% + ${8-16*y2s(y)}px)`; if(y2s(y)>0.97) sp.style.transform='translateX(-100%)'; if(y2s(y)<0.02) sp.style.transform='none'; tk.appendChild(sp);});
+[[5.4e8,'540 Ma','ph'],[1e8,'100 Ma',''],[1e7,'10 Ma',''],[1e6,'1 Ma','ph'],[1.2e4,'10,000 BCE','tab'],[ya(1),'1 CE','ph'],[ya(1000),'1000',''],[ya(1500),'1500','tab'],[ya(1800),'1800',''],[ya(1900),'1900',''],[ya(1990),'1990',''],[0,'Now','ph']].forEach(([y,l,tier])=>{
+  const sp=document.createElement('span'); sp.textContent=l; if(tier) sp.className=tier; sp.style.left=`calc(${y2s(y)*100}% + ${8-16*y2s(y)}px)`; if(y2s(y)>0.97) sp.style.transform='translateX(-100%)'; if(y2s(y)<0.02) sp.style.transform='none'; tk.appendChild(sp);});
 // era band: geologic vs human
 const band=document.getElementById('band');
 [[5.4e8,2e6,'var(--land)'],[2e6,1.2e4,'var(--c-pre)'],[1.2e4,ya(1500),'var(--c-holo)'],[ya(1500),0,'var(--c-vol)']].forEach(([a,b,c])=>{const i=document.createElement('i');i.style.width=((y2s(b)-y2s(a))*100)+'%';i.style.background=c;i.style.opacity=.7;band.appendChild(i);});
@@ -628,8 +638,12 @@ bars('f-cor',PAIRS.slice().sort((a,b)=>b.v[7]-a.v[7]).slice(0,20).map(p=>[NM[p.o
 // country explorer
 const sel=document.getElementById('cty');
 CODES.filter(c=>MIG.emi[c]||MIG.imm[c]).sort((a,b)=>NM[a].localeCompare(NM[b])).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=NM[c];sel.appendChild(o);});
+const A2={"AF":4,"AL":8,"DZ":12,"AS":16,"AD":20,"AO":24,"AI":660,"AG":28,"AR":32,"AM":51,"AW":533,"AU":36,"AT":40,"AZ":31,"BS":44,"BH":48,"BD":50,"BB":52,"BY":112,"BE":56,"BZ":84,"BJ":204,"BM":60,"BT":64,"BO":68,"BA":70,"BW":72,"BR":76,"BN":96,"BG":100,"BF":854,"BI":108,"KH":116,"CM":120,"CA":124,"CV":132,"KY":136,"CF":140,"TD":148,"CL":152,"CN":156,"CO":170,"KM":174,"CG":178,"CD":180,"CK":184,"CR":188,"CI":384,"HR":191,"CU":192,"CY":196,"CZ":203,"DK":208,"DJ":262,"DM":212,"DO":214,"EC":218,"EG":818,"SV":222,"GQ":226,"ER":232,"EE":233,"ET":231,"FK":238,"FO":234,"FJ":242,"FI":246,"FR":250,"GF":254,"PF":258,"GA":266,"GM":270,"GE":268,"DE":276,"GH":288,"GI":292,"GR":300,"GL":304,"GD":308,"GP":312,"GU":316,"GT":320,"GN":324,"GW":624,"GY":328,"HT":332,"VA":336,"HN":340,"HK":344,"HU":348,"IS":352,"IN":356,"ID":360,"IR":364,"IQ":368,"IE":372,"IL":376,"IT":380,"JM":388,"JP":392,"JO":400,"KZ":398,"KE":404,"KI":296,"KP":408,"KR":410,"KW":414,"KG":417,"LA":418,"LV":428,"LB":422,"LS":426,"LR":430,"LY":434,"LI":438,"LT":440,"LU":442,"MO":446,"MG":450,"MW":454,"MY":458,"MV":462,"ML":466,"MT":470,"MH":584,"MQ":474,"MR":478,"MU":480,"YT":175,"MX":484,"FM":583,"MD":498,"MC":492,"MN":496,"MS":500,"MA":504,"MZ":508,"MM":104,"NA":516,"NR":520,"NP":524,"NL":528,"NC":540,"NZ":554,"NI":558,"NE":562,"NG":566,"NU":570,"MP":580,"MK":807,"NO":578,"OM":512,"PK":586,"PW":585,"PS":275,"PA":591,"PG":598,"PY":600,"PE":604,"PH":608,"PL":616,"PT":620,"PR":630,"QA":634,"RE":638,"RO":642,"RU":643,"RW":646,"SH":654,"KN":659,"LC":662,"PM":666,"VC":670,"WS":882,"SM":674,"ST":678,"SA":682,"SN":686,"SC":690,"SL":694,"SG":702,"SK":703,"SI":705,"SB":90,"SO":706,"ZA":710,"ES":724,"LK":144,"SD":729,"SR":740,"SZ":748,"SE":752,"CH":756,"SY":760,"TW":158,"TJ":762,"TZ":834,"TH":764,"TL":626,"TG":768,"TK":772,"TO":776,"TT":780,"TN":788,"TR":792,"TM":795,"TC":796,"TV":798,"UG":800,"UA":804,"AE":784,"GB":826,"US":840,"UY":858,"UZ":860,"VU":548,"VE":862,"VN":704,"VG":92,"VI":850,"WF":876,"EH":732,"YE":887,"ZM":894,"ZW":716,"BQ":535,"CW":531,"IM":833,"ME":499,"BL":652,"MF":663,"RS":688,"SX":534,"SS":728};
+const ph=document.createElement('option'); ph.value=''; ph.textContent='Choose a country'; ph.disabled=true; sel.insertBefore(ph,sel.firstChild);
+function emptyExplorer(){ sel.value=''; document.getElementById('cty-sum').textContent='Choose a country to see where the people born there live, and where its foreign-born residents come from.'; ['x-out','x-in'].forEach(id=>document.getElementById(id).innerHTML=''); document.getElementById('showmap').disabled=true; }
 function fillExplorer(c){
-  c=+c; sel.value=c;
+  if(c===''||c==null){emptyExplorer();return;}
+  c=+c; sel.value=c; document.getElementById('showmap').disabled=false;
   const out=ALLPAIRS.filter(p=>p.o==c).sort((a,b)=>b.v[7]-a.v[7]).slice(0,10).map(p=>[NM[p.d],p.v[7]]);
   const inn=ALLPAIRS.filter(p=>p.d==c).sort((a,b)=>b.v[7]-a.v[7]).slice(0,10).map(p=>[NM[p.o],p.v[7]]);
   bars('x-out',out.length?out:[['None above 30,000',0]],'var(--c-dia)','k');
@@ -646,7 +660,10 @@ function setFocus(c){
 sel.addEventListener('change',()=>fillExplorer(sel.value));
 document.getElementById('showmap').addEventListener('click',()=>{setFocus(sel.value);document.getElementById('mapbox').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});});
 clearBtns.forEach(b=>b.addEventListener('click',()=>setFocus(null)));
-fillExplorer(356);
+let initC=null;
+try{ for(const loc of (navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||''])){ const m=String(loc).match(/[-_]([a-z]{2})(?:$|[-_])/i); if(m){ const n=A2[m[1].toUpperCase()]; if(n&&(MIG.emi[n]||MIG.imm[n])){initC=n;break;} } } }catch(e){}
+fillExplorer(initC);
+document.getElementById('jumpToday').addEventListener('click',()=>{stop();touched=true;animateTo(1);document.getElementById('mapbox').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});});
 bars('b-send',SEND,'var(--c-vol)','$');
 document.getElementById('f-reg').innerHTML=REG.map(d=>`<div class="flow"><span>${d[0]}</span><span class="v">${d[1]}M</span><span class="meter" style="width:${d[1]/27*100}%"></span></div>`).join('');
 // stock line chart
