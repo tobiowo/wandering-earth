@@ -80,6 +80,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+.rt.hl path:not(.on){stroke-opacity:.12}
+.legend i.dash{background:none!important;border-top:2px dashed var(--muted);height:0}
 .legend i.dot{width:10px;height:10px;border-radius:50%}
 .layers{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
 .layers button{font-size:12px;padding:3px 10px}
@@ -156,6 +158,7 @@ select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid va
           <span><i style="background:var(--c-holo)"></i>Farmers, seafarers, herders</span>
           <span><i style="background:var(--c-forced)"></i>Forced migration</span>
           <span><i style="background:var(--c-vol)"></i>Mass &amp; labour migration</span>
+          <span><i class="dash"></i>No reliable count</span>
           <span><i class="dot" style="background:var(--c-dia)"></i>Diaspora (by origin)</span>
           <span><i class="dot" style="border:2px solid var(--c-dest)"></i>Migrants hosted</span>
           <span style="color:var(--muted)">Click a circle to map one country</span>
@@ -190,14 +193,17 @@ select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid va
       <div class="card"><h3>Global migrant stock</h3><div class="src">Millions · UN DESA via IOM World Migration Report 2026, Table 1</div><svg id="stock" viewBox="0 0 360 170"></svg></div>
       <div class="card"><h3>Money sent home</h3><div class="src">Top recipients · US$ billions · World Bank 2024. In 2025 India passed $150B (IOM WMR 2026).</div><div class="bars" id="b-rem"></div><div class="src">Top senders · US$ billions · 2025 (IOM WMR 2026)</div><div class="bars" id="b-send"></div></div>
     </div>
-    <p class="caveat">About the map: from 540 to about 2 million years ago the map shows the PALEOMAP paleo-elevation models of Scotese and Wright (2018), one every 5 million years, blended in between. They show where land, shallow seas and mountains were at each time, at 1° resolution. Reconstructions before about 200 million years ago are less certain because the seafloor that recorded plate motions has since been destroyed. After that, the map uses today's coastlines; ice-age sea levels are not drawn. Prehistoric routes are generalized paths through dated archaeological and genetic sites, and several dates, especially the first arrivals in Australia and the Americas, are still debated.</p>
+    <p class="caveat">About the map: from 540 to about 2 million years ago the map shows the PALEOMAP paleo-elevation models of Scotese and Wright (2018), one every 5 million years, blended in between. They show where land, shallow seas and mountains were at each time, at 1° resolution. Reconstructions before about 200 million years ago are less certain because the seafloor that recorded plate motions has since been destroyed. After that, the map uses today's coastlines; ice-age sea levels are not drawn. Line widths after 1500 are proportional to the number of people where a source gives a count; dashed branches have no reliable count. Prehistoric routes are generalized paths through dated archaeological and genetic sites, and several dates, especially the first arrivals in Australia and the Americas, are still debated.</p>
     <div class="sources">
       <b style="color:var(--ink)">Sources</b>
       <span>UN DESA Population Division, <a href="https://www.un.org/development/desa/pd/content/international-migrant-stock" target="_blank" rel="noopener">International Migrant Stock 2024</a> and <a href="https://www.un.org/development/desa/pd/sites/www.un.org.development.desa.pd/files/undesa_pd_2025_intlmigstock_2024_key_facts_and_figures_advance-unedited.pdf" target="_blank" rel="noopener">Key facts and figures</a></span>
       <span>IOM, <a href="https://worldmigrationreport.iom.int/what-we-do/all-world-migration-reports" target="_blank" rel="noopener">World Migration Report 2026</a> (corridors, migrant stock since 1970, migrant workers, remittances, Missing Migrants data)</span>
       <span>UNHCR, <a href="https://www.unhcr.org/th/en/ekiiywkab-unhcr/figure-glance" target="_blank" rel="noopener">Figures at a glance</a> (Global Trends, June 2026)</span>
             <span>World Bank, <a href="https://blogs.worldbank.org/en/peoplemove/in-2024--remittance-flows-to-low--and-middle-income-countries-ar" target="_blank" rel="noopener">Remittance flows 2024</a></span>
-      <span>SlaveVoyages, <a href="https://www.slavevoyages.org/assessment/estimates" target="_blank" rel="noopener">Trans-Atlantic Slave Trade estimates</a> · A. McKeown, "Global Migration, 1846–1940", Journal of World History (2004)</span>
+      <span>SlaveVoyages, <a href="https://www.slavevoyages.org/assessment/estimates" target="_blank" rel="noopener">Trans-Atlantic Slave Trade estimates</a> (embarked and disembarked by region, 1501–1866)</span>
+      <span>A. McKeown, <a href="https://historycooperative.org/journal/global-migration-1846-1940/" target="_blank" rel="noopener">"Global Migration, 1846–1940"</a>, Journal of World History (2004)</span>
+      <span>B. Sánchez-Alonso, <a href="https://ehes.org/wp/EHES_134.pdf" target="_blank" rel="noopener">The age of mass migration in Latin America</a>, EHES working paper 134 · UK National Archives, <a href="https://www.nationalarchives.gov.uk/explore-the-collection/explore-by-time-period/victorians/age-of-mass-migration/" target="_blank" rel="noopener">The age of mass migration</a></span>
+      <span>US National Archives, <a href="https://www.archives.gov/research/african-americans/migrations/great-migration" target="_blank" rel="noopener">The Great Migration</a> · Statistisches Bundesamt (1958) via <a href="https://en.wikipedia.org/wiki/Demographic_estimates_of_the_flight_and_expulsion_of_Germans" target="_blank" rel="noopener">Demographic estimates of the flight and expulsion of Germans</a> · J. Chatterji, <a href="https://www.cambridge.org/core/books/from-the-ashes-of-1947/partitioned-lands-partitioned-histories/5E2B0F0753C59835EB27762D5B407F8E" target="_blank" rel="noopener">"Partitioned Lands, Partitioned Histories"</a> · <a href="https://en.wikipedia.org/wiki/Stolypin_reform" target="_blank" rel="noopener">Stolypin reform</a></span>
       <span>Historical borders: A. Ourednik, <a href="https://github.com/aourednik/historical-basemaps" target="_blank" rel="noopener">historical-basemaps</a> (GPL-3.0), simplified. A work in progress; ancient borders are approximate.</span>
       <span>Coastlines: Natural Earth via world-atlas. Ancient geography: C. R. Scotese &amp; N. M. Wright (2018), <a href="https://zenodo.org/records/5460860" target="_blank" rel="noopener">PALEOMAP Paleodigital Elevation Models</a> (CC BY 4.0).</span>
     </div>
@@ -248,25 +254,51 @@ const ROUTES=[
  {cat:'holo',name:'Polynesians reach Aotearoa',note:'',pts:[[-150,-17,ya(1025)],[-175,-30,ya(1200)],[174.8,-41,ya(1280)]],rest:.3},
  {cat:'holo',name:'Norse voyages',note:'Iceland (874), Greenland (~985), Newfoundland (~1021 CE).',pts:[[6,61,ya(860)],[-19,64,ya(874)],[-45,61,ya(985)],[-55.5,51.6,ya(1021)]],rest:.25},
  {cat:'holo',name:'Thule Inuit migration',note:'From Alaska across the Canadian Arctic to Greenland (~1000–1300 CE).',pts:[[-160,70,ya(1000)],[-125,70,ya(1150)],[-90,70,ya(1220)],[-60,72,ya(1280)],[-50,68,ya(1300)]],rest:.3},
- // historic, volume in millions (m)
- {cat:'forced',m:12.5,name:'Transatlantic slave trade',note:'1501–1866: about 12.5 million Africans embarked, about 10.7 million survived the crossing. Brazil received the most.',pts:[[3,6,ya(1501)],[-15,-2,ya(1600)],[-38.5,-12.9,ya(1700)]],end:ya(1866)},
- {cat:'forced',m:6,name:'Slave trade to the Caribbean',note:'Part of the same 12.5 million: Jamaica, Saint-Domingue, Cuba and Barbados were major destinations.',pts:[[3,6,ya(1520)],[-30,13,ya(1620)],[-72,19,ya(1720)]],end:ya(1866)},
- {cat:'forced',m:1.5,name:'Slave trade from West-Central Africa',note:'Angola and the Congo coast were the largest single region of embarkation.',pts:[[13,-8.8,ya(1560)],[-15,-12,ya(1650)],[-43,-22.9,ya(1740)]],end:ya(1866)},
- {cat:'forced',m:.5,name:'Slave trade to North America',note:'About 400,000 people were brought to mainland North America.',pts:[[-15,13,ya(1620)],[-50,25,ya(1700)],[-79.9,32.8,ya(1760)]],end:ya(1866)},
- {cat:'vol',m:55,name:'Europe to the Americas',note:'1846–1940: roughly 55–58 million Europeans emigrated, mostly to the US, with large flows to Argentina, Canada and Brazil (McKeown 2004).',pts:[[4,50,ya(1846)],[-30,46,ya(1870)],[-74,40.7,ya(1890)]],end:ya(1940)},
- {cat:'vol',m:10,name:'Europe to South America',note:'Italians and Spaniards especially, to Argentina, Brazil and Uruguay.',pts:[[-4,40,ya(1860)],[-30,0,ya(1885)],[-58.4,-34.6,ya(1905)]],end:ya(1940)},
- {cat:'vol',m:4,name:'Britain to Australia',note:'Ships sailed around the Cape of Good Hope; the Suez Canal shortened the route after 1869. The 1850s gold rushes drew hundreds of thousands to Victoria and New South Wales.',pts:[[-1,52,ya(1850)],[-18,20,ya(1858)],[12,-40,ya(1868)],[90,-42,ya(1885)],[151,-33.9,ya(1900)]],end:ya(1940)},
- {cat:'vol',name:'Britain to New Zealand',note:'Organized British settlement began in 1840, the year the Treaty of Waitangi was signed with Māori chiefs.',pts:[[90,-42,ya(1885)],[140,-45,ya(1893)],[174.8,-41.3,ya(1900)]],end:ya(1940)},
- {cat:'vol',name:'Britain to South Africa',note:'Britain took the Cape from the Dutch in 1806 and about 4,000 British settlers arrived in 1820. Diamonds (1867) and gold (1886) drew many more British, European and Australian migrants.',pts:[[-1,52,ya(1850)],[-18,20,ya(1858)],[5,-20,ya(1864)],[18.4,-33.9,ya(1870)]],end:ya(1940)},
- {cat:'vol',m:50,name:'India & southern China to Southeast Asia',note:'1846–1940: roughly 48–52 million people moved to Southeast Asia, the Indian Ocean rim and the South Pacific (McKeown 2004).',pts:[[113,23,ya(1846)],[110,12,ya(1870)],[103.8,1.35,ya(1895)]],end:ya(1940)},
- {cat:'vol',m:20,name:'South Asia to Southeast Asia & beyond',note:'Indian workers went to Burma, Malaya, Ceylon, East Africa, the Caribbean and Fiji, many under indenture.',pts:[[80,13,ya(1850)],[92,12,ya(1870)],[96.2,16.8,ya(1890)]],end:ya(1940)},
- {cat:'vol',m:48,name:'Into Manchuria, Siberia & Central Asia',note:'1846–1940: roughly 46–51 million people from northern China, Russia, Korea and Japan (McKeown 2004). About 25 million came from Shandong and Hebei into Manchuria between the 1890s and the Second World War, many as seasonal workers who later returned (Gottschang &amp; Lary).',pts:[[116,38,ya(1860)],[123,42,ya(1885)],[126.6,45.8,ya(1910)]],end:ya(1940)},
- {cat:'vol',m:20,name:'Russians to Siberia & Central Asia',note:'The end of serfdom (1861) and the Trans-Siberian Railway (1891–1916) opened Siberia to settlers. Under the Stolypin reforms about 2.8 million peasants resettled there between 1908 and 1913, before the 1917 revolution.',pts:[[38,55,ya(1860)],[61,56,ya(1885)],[83,55,ya(1905)],[104,52,ya(1925)]],end:ya(1940)},
- {cat:'vol',m:6,name:'Great Migration (US)',note:'1910–1970: about 6 million Black Americans moved from the rural South to northern and western cities.',pts:[[-90,32.5,ya(1910)],[-88,37,ya(1930)],[-87.6,41.9,ya(1950)]],end:ya(1970)},
- {cat:'forced',m:12,name:'Expulsion of Germans from Eastern Europe',note:'1944–1950: roughly 12 million ethnic Germans fled or were expelled westward.',pts:[[21,52,ya(1944)],[16,52,ya(1946)],[10,51.5,ya(1948)]],end:ya(1955)},
- {cat:'forced',m:15,name:'Partition of India',note:'1947: about 15 million people crossed the new borders between India and Pakistan.',pts:[[71,30,ya(1947)],[74.5,31,ya(1947.5)],[77.2,28.6,ya(1948)]],end:ya(1955)},
- {cat:'forced',m:5,name:'Partition of Bengal',note:'',pts:[[90.4,23.8,ya(1947)],[88.4,22.6,ya(1948)]],end:ya(1955)},
+ // historic streams: one stream per migration system, branching to its main destinations.
+ // m = millions, only where a cited source gives a count; v = the wording shown; branches without a count are drawn dashed.
+ {cat:'forced',stream:'slave',label:'Embarked in West Africa (Senegambia to the Bight of Biafra)',m:6.29,v:'6.29 million embarked',pts:[[2,5.5,ya(1501)],[-10,3,ya(1530)],[-22,0,ya(1560)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'Embarked in West Central Africa (Angola and the Congo coast)',m:5.69,v:'5.69 million embarked',pts:[[13,-8.8,ya(1501)],[-5,-5,ya(1530)],[-22,0,ya(1560)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'Brazil',m:4.86,v:'4.86 million disembarked',pts:[[-22,0,ya(1560)],[-32,-8,ya(1590)],[-38.5,-12.9,ya(1620)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'British Caribbean',m:2.32,v:'2.32 million disembarked',pts:[[-22,0,ya(1560)],[-50,12,ya(1610)],[-77.3,18.1,ya(1650)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'Spanish Americas',m:1.29,v:'1.29 million disembarked',pts:[[-22,0,ya(1560)],[-50,14,ya(1600)],[-79.5,22,ya(1640)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'French Caribbean',m:1.12,v:'1.12 million disembarked',pts:[[-22,0,ya(1560)],[-48,11,ya(1620)],[-72.3,19,ya(1680)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'Dutch Americas',m:0.44,v:'444,725 disembarked',pts:[[-22,0,ya(1560)],[-40,4,ya(1610)],[-55.2,5.8,ya(1650)]],end:ya(1866)},
+ {cat:'forced',stream:'slave',label:'Mainland North America',m:0.39,v:'388,744 disembarked',pts:[[-22,0,ya(1560)],[-50,22,ya(1640)],[-79.9,32.8,ya(1700)]],end:ya(1866)},
+ {cat:'vol',stream:'eur',label:'Leaving Europe',m:56,v:'55–58 million to the Americas alone',pts:[[8,50,ya(1846)],[-4,47,ya(1850)],[-15,44,ya(1855)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'United States',m:36,v:'over 65% of the 55–58 million who went to the Americas',pts:[[-15,44,ya(1855)],[-45,44,ya(1868)],[-74,40.7,ya(1880)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'Canada',v:null,pts:[[-15,44,ya(1855)],[-45,48,ya(1870)],[-71.2,46.8,ya(1885)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'Argentina',m:4,v:'about 4 million settled, mid-1800s to 1930',pts:[[-15,44,ya(1855)],[-28,-5,ya(1872)],[-58.4,-34.6,ya(1890)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'Brazil',m:2,v:'about 2 million settled, mid-1800s to 1930',pts:[[-15,44,ya(1855)],[-30,-8,ya(1874)],[-46.3,-23.9,ya(1892)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'Australia & New Zealand',m:1.5,v:'about 1.5 million from the UK and Ireland',pts:[[-15,44,ya(1855)],[-20,10,ya(1862)],[12,-40,ya(1870)],[90,-42,ya(1885)],[151,-33.9,ya(1900)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'New Zealand',v:'included in the Australia & New Zealand figure',dash:true,pts:[[90,-42,ya(1885)],[140,-45,ya(1893)],[174.8,-41.3,ya(1900)]],end:ya(1940)},
+ {cat:'vol',stream:'eur',label:'South Africa',v:null,pts:[[-15,44,ya(1855)],[-20,10,ya(1862)],[5,-20,ya(1866)],[18.4,-33.9,ya(1872)]],end:ya(1940)},
+ {cat:'vol',stream:'sasia',label:'Burma',m:15,v:'over 15 million',pts:[[80.3,13.1,ya(1846)],[89,15,ya(1858)],[96.2,16.8,ya(1870)]],end:ya(1940)},
+ {cat:'vol',stream:'sasia',label:'Ceylon (Sri Lanka)',m:8,v:'over 8 million',pts:[[80.3,13.1,ya(1846)],[80.8,10,ya(1855)],[80.6,7.3,ya(1862)]],end:ya(1940)},
+ {cat:'vol',stream:'sasia',label:'Malaya',m:4,v:'nearly 4 million',pts:[[80.3,13.1,ya(1846)],[91,8,ya(1862)],[100.3,5.4,ya(1878)]],end:ya(1940)},
+ {cat:'vol',stream:'sasia',label:'Africa, other Southeast Asia & islands',m:1,v:'about 1 million combined',pts:[[80.3,13.1,ya(1846)],[70,-2,ya(1860)],[57.5,-20.2,ya(1875)]],end:ya(1940)},
+ {cat:'vol',stream:'china',label:'Straits Settlements (Singapore, Penang, Malacca)',m:11,v:'up to 11 million',pts:[[116.7,23.4,ya(1846)],[110,12,ya(1860)],[103.8,1.35,ya(1875)]],end:ya(1940)},
+ {cat:'vol',stream:'china',label:'Thailand',m:4,v:'nearly 4 million',pts:[[116.7,23.4,ya(1846)],[108,16,ya(1860)],[100.5,13.75,ya(1872)]],end:ya(1940)},
+ {cat:'vol',stream:'china',label:'French Indochina',m:2.5,v:'2–3 million',pts:[[116.7,23.4,ya(1846)],[110,16,ya(1858)],[106.7,10.8,ya(1870)]],end:ya(1940)},
+ {cat:'vol',stream:'china',label:'Dutch East Indies',m:1,v:'over 1 million direct (over 4 million including via Singapore)',pts:[[116.7,23.4,ya(1846)],[113,6,ya(1862)],[106.8,-6.2,ya(1878)]],end:ya(1940)},
+ {cat:'vol',stream:'china',label:'Philippines',m:0.8,v:'under 1 million',pts:[[116.7,23.4,ya(1846)],[119,18,ya(1856)],[121,14.6,ya(1865)]],end:ya(1940)},
+ {cat:'vol',stream:'nasia',label:'Northern Chinese to Manchuria & Siberia',m:30,v:'28–33 million',pts:[[118,36.5,ya(1860)],[121.5,39.5,ya(1880)],[126.6,45.8,ya(1905)]],end:ya(1940)},
+ {cat:'vol',stream:'nasia',label:'Russians to Siberia & Central Asia',m:13,v:'at least 13 million',pts:[[38,55,ya(1860)],[61,56,ya(1885)],[83,55,ya(1905)],[104,52,ya(1925)]],end:ya(1940)},
+ {cat:'vol',stream:'nasia',label:'Koreans to Japan',m:2.5,v:'about 2.5 million, mostly in the 1930s',pts:[[127,36.5,ya(1910)],[131,35,ya(1922)],[135.5,34.7,ya(1935)]],end:ya(1945)},
+ {cat:'vol',stream:'nasia',label:'Koreans to Manchuria & Siberia',m:2,v:'nearly 2 million',pts:[[127,38.5,ya(1870)],[128.5,41,ya(1890)],[129.5,43,ya(1910)]],end:ya(1945)},
+ {cat:'vol',stream:'nasia',label:'Japanese to Manchuria & Siberia',m:0.5,v:'over 500,000',pts:[[135.5,34.7,ya(1905)],[128,38,ya(1920)],[123.4,41.8,ya(1935)]],end:ya(1945)},
+ {cat:'vol',m:6,name:'Great Migration (United States)',note:'1910s–1970s: about 6 million Black Americans moved from the rural South to cities in the North, Midwest and West. Source: US National Archives.',pts:[[-90,32.5,ya(1910)],[-88,37,ya(1930)],[-87.6,41.9,ya(1950)]],end:ya(1970)},
+ {cat:'forced',m:12,name:'Flight and expulsion of Germans',note:'1944–1950: about 12 million ethnic Germans fled or were expelled westward, mostly from postwar Poland and Czechoslovakia. Estimates range from 12 to 16.5 million. Source: Statistisches Bundesamt (1958).',pts:[[21,52,ya(1944)],[16,52,ya(1946)],[10,51.5,ya(1948)]],end:ya(1955)},
+ {cat:'forced',stream:'partition',label:'Punjab',v:null,pts:[[73,30.5,ya(1947)],[74.8,31.2,ya(1947.5)],[77.2,28.6,ya(1948)]],end:ya(1955)},
+ {cat:'forced',stream:'partition',label:'Bengal',v:null,pts:[[90.4,23.8,ya(1947)],[89.3,23.2,ya(1947.5)],[88.4,22.6,ya(1948)]],end:ya(1955)},
 ];
+const STREAMS={
+ slave:{name:'Transatlantic slave trade, 1501–1866',src:'SlaveVoyages, Trans-Atlantic Slave Trade estimates',note:'About 12.5 million Africans were forced onto ships; about 10.7 million survived the crossing. Another 540,000 were taken from South-east Africa and the Indian Ocean islands.'},
+ eur:{name:'European mass migration, 1846–1940',src:'McKeown, “Global Migration, 1846–1940” (2004); Sánchez-Alonso, EHES working paper 134; UK National Archives',note:'About 55–58 million Europeans emigrated to the Americas. Smaller streams went to Australia, New Zealand and South Africa, and over 3 million French and Italians went to North Africa.'},
+ sasia:{name:'South Asian migration, 1846–1940',src:'McKeown, “Global Migration, 1846–1940” (2004)',note:'Over 29 million people left India, mostly for Burma, Ceylon and Malaya, and many later returned. Fewer than 10% went as indentured labourers, including to Mauritius, Fiji, Natal and the Caribbean.'},
+ china:{name:'Southern Chinese migration, 1846–1940',src:'McKeown, “Global Migration, 1846–1940” (2004)',note:'Over 19 million people left Guangdong and Fujian for Southeast Asia. Over a third of arrivals in the Straits Settlements moved on elsewhere.'},
+ nasia:{name:'North Asian migration, 1846–1940',src:'McKeown, “Global Migration, 1846–1940” (2004); Stolypin reform figure from Wikipedia',note:'About 46–51 million people moved into Manchuria, Siberia and Central Asia. The end of serfdom (1861), the Trans-Siberian Railway (1891–1916) and the Stolypin reforms drove Russian settlement; about 2.8 million peasants resettled in Siberia in 1908–1913 alone.'},
+ partition:{name:'Partition of India, 1947',src:'Chatterji, “Partitioned Lands, Partitioned Histories”, in From the Ashes of 1947 (Cambridge)',note:'About 14.5 million people crossed the new borders between India and Pakistan, moving in both directions. Most moved in Punjab; in Bengal the movement was smaller at first but went on for years.'},
+};
 
 // ---------- modern data ----------
 const REG=[['Latin America & Caribbean → Northern America',27],['Central & Southern Asia → N. Africa & Western Asia',20],['N. Africa & Western Asia → Europe',13],['Eastern & SE Asia → Northern America',12],['Central & Southern Asia → Europe',10]];
@@ -315,7 +347,7 @@ const EV=[
  [ya(1206),'Medieval','The Mongol Empire','Genghis Khan and his successors build the largest contiguous land empire in history, from Korea to Hungary.'],
  [ya(1492),'Early modern','Contact across the Atlantic','Columbus reaches the Caribbean. Over the next century Indigenous populations of the Americas collapse, by as much as 90% in many regions, mainly from introduced diseases.'],
  [ya(1501),'Early modern','The Atlantic slave trade','Over 365 years about 12.5 million Africans are forced onto ships bound for the Americas; about 10.7 million survive the voyage.'],
- [ya(1846),'Industrial age','The great migrations','Steamships and railways carry about 150 million people in three huge streams: from Europe to the Americas, from India and China to Southeast Asia, and into North Asia.'],
+ [ya(1846),'Industrial age','The age of mass migration','Steamships and railways carry about 150 million people in three huge streams: from Europe to the Americas, from India and China to Southeast Asia, and into North Asia.'],
  [ya(1944),'Mid-20th century','War and partition','Millions are expelled after World War II, and about 15 million cross borders during the Partition of India in 1947.'],
  [ya(1970),'1970','84 million migrants','About 2.3% of the world lives outside its country of birth. The number will more than triple by 2024.'],
  [ya(1990),'1990','154 million migrants','The UN counts 154 million people living outside their country of birth, 2.9% of the world population.'],
@@ -337,7 +369,7 @@ const gLand=svg.append('g').attr('clip-path','url(#sph)');
 const gBord=svg.append('g').attr('clip-path','url(#sph)');
 const gBordLab=svg.append('g').attr('pointer-events','none');
 const gOceanLab=svg.append('g').attr('pointer-events','none');
-const gRoutes=svg.append('g').attr('fill','none').attr('stroke-linecap','round').attr('stroke-linejoin','round');
+const gRoutes=svg.append('g').attr('class','rt').attr('fill','none').attr('stroke-linecap','round').attr('stroke-linejoin','round');
 const gHeads=svg.append('g').attr('pointer-events','none');
 const gModern=svg.append('g');
 const gLabels=svg.append('g').attr('pointer-events','none');
@@ -388,8 +420,8 @@ try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change'
 
 // routes
 const catColor={pre:'var(--c-pre)',holo:'var(--c-holo)',forced:'var(--c-forced)',vol:'var(--c-vol)'};
-ROUTES.forEach(r=>{r.start=r.pts[0][2]; r.done=r.pts[r.pts.length-1][2]; r.w = r.m? 1.4+Math.sqrt(r.m)*0.9 : (r.cat==='pre'?2.2:1.8);});
-const routeSel=gRoutes.selectAll('path').data(ROUTES).join('path').attr('stroke',d=>catColor[d.cat]).attr('stroke-width',d=>d.w).style('cursor','help');
+ROUTES.forEach(r=>{r.start=r.pts[0][2]; r.done=r.pts[r.pts.length-1][2]; r.dash=r.stream&&!r.m; r.w = r.m? 1.4+Math.sqrt(r.m)*0.9 : r.stream?1.8:(r.cat==='pre'?2.2:1.8);});
+const routeSel=gRoutes.selectAll('path').data(ROUTES).join('path').attr('stroke',d=>catColor[d.cat]).attr('stroke-width',d=>d.w).attr('stroke-dasharray',d=>d.dash?'5 4':null).style('cursor','help');
 const headSel=gHeads.selectAll('circle').data(ROUTES).join('circle').attr('r',d=>Math.max(3,d.w*0.9)).attr('fill',d=>catColor[d.cat]).attr('stroke','var(--panel)').attr('stroke-width',1.2);
 
 function partial(r,y){
@@ -478,7 +510,13 @@ let modernYr=2024;
 const tip=document.getElementById('tip'), box=document.getElementById('mapbox');
 function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const b=box.getBoundingClientRect();let x=e.clientX-b.left+12,y=e.clientY-b.top+12;if(x+260>b.width)x=Math.max(4,x-280);tip.style.left=x+'px';tip.style.top=y+'px';}
 function hideTip(){tip.hidden=true;}
-routeSel.on('pointermove',(e,d)=>showTip(e,`<b>${d.name}</b>${d.note?'<br>'+d.note:''}`)).on('pointerleave',hideTip);
+function routeTip(d){
+  if(!d.stream) return `<b>${d.name}</b>${d.note?'<br>'+d.note:''}`;
+  const S=STREAMS[d.stream];
+  return `<b>${S.name}</b><br>${d.label}: ${d.v||'no reliable count found'}<br><span style="opacity:.85">${S.note}</span><br><span style="opacity:.65">Source: ${S.src}</span>`;
+}
+routeSel.on('pointerenter',(e,d)=>{gRoutes.classed('hl',true);routeSel.classed('on',x=>d.stream?x.stream===d.stream:x===d);})
+  .on('pointermove',(e,d)=>showTip(e,routeTip(d))).on('pointerleave',()=>{hideTip();gRoutes.classed('hl',false);routeSel.classed('on',false);});
 diaSel.on('pointermove',(e,c)=>showTip(e,`<b>${NM[c]}</b><br>${fmtM(at(MIG.emi[c],modernYr))} people born here live abroad (${yrLab(modernYr)})<br><i>Click to map them</i>`)).on('pointerleave',hideTip).on('click',(e,c)=>setFocus(c));
 destSel.on('pointermove',(e,c)=>showTip(e,`<b>${NM[c]}</b><br>${fmtM(at(MIG.imm[c],modernYr))} foreign-born residents (${yrLab(modernYr)})<br><i>Click to see where they come from</i>`)).on('pointerleave',hideTip).on('click',(e,c)=>setFocus(c));
 

@@ -22,7 +22,16 @@ The page is a single static `index.html` with no build step. It loads d3 and top
 - **Migrant stock:** United Nations, Department of Economic and Social Affairs, Population Division (2024), *International Migrant Stock 2024*. [un.org](https://www.un.org/development/desa/pd/content/international-migrant-stock). CC BY 3.0 IGO. Reduced to totals by country and country pairs of 30,000+ in `data/mig.js`.
 - **Historical borders:** A. Ourednik and contributors, [historical-basemaps](https://github.com/aourednik/historical-basemaps). GPL-3.0. Simplified with mapshaper in `data/borders.js`. The upstream project is a work in progress and ancient borders are approximate; report border errors upstream.
 - **Coastlines:** Natural Earth (public domain) via [world-atlas](https://github.com/topojson/world-atlas).
-- **Figures cited on the page:** IOM, *World Migration Report 2026*; UNHCR, *Global Trends* (June 2026); World Bank remittance estimates (2024); SlaveVoyages trans-Atlantic estimates; A. McKeown, "Global Migration, 1846–1940", *Journal of World History* (2004).
+- **Historic migration streams:** each line after 1500 is drawn as a stream (one migration system) branching to its main destinations. Widths are proportional to the number of people where a source gives a count; dashed branches have no reliable count. Sources:
+  - [SlaveVoyages](https://www.slavevoyages.org/assessment/estimates), Trans-Atlantic Slave Trade estimates (embarked and disembarked by region, 1501–1866)
+  - A. McKeown, ["Global Migration, 1846–1940"](https://historycooperative.org/journal/global-migration-1846-1940/), *Journal of World History* (2004): European, South Asian, southern Chinese and North Asian streams
+  - B. Sánchez-Alonso, [The age of mass migration in Latin America](https://ehes.org/wp/EHES_134.pdf), EHES working paper 134: Argentina and Brazil
+  - UK National Archives, [The age of mass migration](https://www.nationalarchives.gov.uk/explore-the-collection/explore-by-time-period/victorians/age-of-mass-migration/): Australia and New Zealand
+  - US National Archives, [The Great Migration](https://www.archives.gov/research/african-americans/migrations/great-migration)
+  - Statistisches Bundesamt (1958), via [Demographic estimates of the flight and expulsion of Germans](https://en.wikipedia.org/wiki/Demographic_estimates_of_the_flight_and_expulsion_of_Germans)
+  - J. Chatterji, ["Partitioned Lands, Partitioned Histories"](https://www.cambridge.org/core/books/from-the-ashes-of-1947/partitioned-lands-partitioned-histories/5E2B0F0753C59835EB27762D5B407F8E), in *From the Ashes of 1947*: Partition
+  - Gaps: no reliable 1846–1940 counts yet for European migration to Canada or South Africa.
+- **Modern figures cited on the page:** IOM, *World Migration Report 2026*; UNHCR, *Global Trends* (June 2026); World Bank remittance estimates (2024).
 
 ## Caveats
 
