@@ -33,10 +33,11 @@ The page is a single static `index.html` with no build step. It loads d3 and top
   - UK National Archives, [The age of mass migration](https://www.nationalarchives.gov.uk/explore-the-collection/explore-by-time-period/victorians/age-of-mass-migration/): Australia and New Zealand
   - US National Archives, [The Great Migration](https://www.archives.gov/research/african-americans/migrations/great-migration)
   - Statistisches Bundesamt (1958), via [Demographic estimates of the flight and expulsion of Germans](https://en.wikipedia.org/wiki/Demographic_estimates_of_the_flight_and_expulsion_of_Germans)
+  - E. Kuparinen, [*An African Alternative: Nordic Migration to South Africa, 1815–1914*](https://www.doria.fi/handle/10024/178481) (Finnish Historical Society, 1991): South Africa (European-born residents at the 1904 censuses)
   - I. Talbot, ["The 1947 Partition of India and Migration: A Comparative Study of Punjab and Bengal"](https://eprints.soton.ac.uk/79834), in *Removing Peoples* (Oxford, 2009): Punjab
   - K. Hill, W. Seltzer, J. Leaning, S. J. Malik & S. S. Russell, "The Demographic Impact of Partition: Bengal in 1947": Bengal
   - J. Chatterji, ["Partitioned Lands, Partitioned Histories"](https://www.cambridge.org/core/books/from-the-ashes-of-1947/partitioned-lands-partitioned-histories/5E2B0F0753C59835EB27762D5B407F8E), in *From the Ashes of 1947*: Partition
-  - Gaps: no count for South Africa. The Canada branch uses a census count of European-born residents (a stock), while most other branches count arrivals or settlers.
+  - The Canada and South Africa branches use census counts of European-born residents (a stock), while most other branches count arrivals or settlers.
 - **Modern figures cited on the page:** IOM, *World Migration Report 2026*; UNHCR, *Global Trends* (June 2026); World Bank remittance estimates (2024).
 
 ## Caveats
