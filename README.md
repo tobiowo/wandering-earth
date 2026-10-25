@@ -1,6 +1,6 @@
 # Wandering Earth
 
-An interactive map that runs from Pangaea, 300 million years ago, to the 304 million international migrants of today. Drag the timeline to watch the continents move, follow people out of Africa and across the oceans, see empires and borders change over 5,000 years, and explore where every country's diaspora lives.
+An interactive map that runs from the Cambrian, 540 million years ago, to the 304 million international migrants of today. Drag the timeline to watch the continents gather into Pangaea and break apart, follow people out of Africa and across the oceans, see empires and borders change over 5,000 years, and explore where every country's diaspora lives.
 
 **Live site:** https://tobiowo.github.io/wandering-earth/
 
@@ -8,7 +8,7 @@ An interactive map that runs from Pangaea, 300 million years ago, to the 304 mil
 
 | Time | Layer | Source |
 |---|---|---|
-| 300 – 2 million years ago | Ancient land, shallow seas and mountains, every 5 million years | Scotese & Wright (2018), PALEOMAP PaleoDEMs |
+| 540 – 2 million years ago | Ancient land, shallow seas and mountains, every 5 million years | Scotese & Wright (2018), PALEOMAP PaleoDEMs |
 | 2 million years ago – today | Human dispersal and historic migration routes | Dated archaeological and genetic sites; SlaveVoyages; McKeown (2004) |
 | 3000 BCE – 2010 | Historical borders (31 snapshots) | Ourednik, historical-basemaps |
 | 1990 – 2024 | Diasporas, destinations and every country pair with 30,000+ migrants | UN DESA, International Migrant Stock 2024 |

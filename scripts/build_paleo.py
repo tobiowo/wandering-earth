@@ -7,7 +7,7 @@ TH = [-200, 0, 600, 1800, 3200]
 frames = {}
 for f in glob.glob('Scotese_Wright_2018_Maps_1-88_1degX1deg_PaleoDEMS_nc_v2/*.nc'):
     age = float(re.search(r'_([\d.]+)Ma\.nc$', f).group(1))
-    if age <= 300: frames[age] = f
+    if age <= 540: frames[age] = f
 out = {'w': 360, 'h': 181, 'th': TH, 'frames': []}
 for a in sorted(frames):
     d = netCDF4.Dataset(frames[a]); z = np.array(d.variables['z'][:])
