@@ -25,6 +25,7 @@ The page is a single static `index.html` with no build step. It loads d3 and top
 - **Historic migration streams:** each line after 1500 is drawn as a stream (one migration system) branching to its main destinations. Widths are proportional to the number of people where a source gives a count; dashed branches have no count of their own. Sources:
   - [SlaveVoyages](https://www.slavevoyages.org/assessment/estimates), Trans-Atlantic Slave Trade estimates (embarked and disembarked by region, 1501–1866)
   - A. McKeown, ["Global Migration, 1846–1940"](https://historycooperative.org/journal/global-migration-1846-1940/), *Journal of World History* (2004): European, South Asian, southern Chinese and North Asian streams
+  - T. Hatton & J. Williamson, *The Age of Mass Migration: Causes and Economic Impact*, Oxford University Press (1998), chapter 2: return migration, Canada context
   - R. Abramitzky & L. Boustan, ["Immigration in American Economic History"](https://doi.org/10.1257/jel.20151189), *Journal of Economic Literature* (2017): United States, return migration
   - M. Boyd & M. Vickers, ["100 years of immigration in Canada"](https://www150.statcan.gc.ca/n1/pub/11-008-x/2000002/article/5164-fra.pdf), *Canadian Social Trends*, Statistics Canada (2000): Canada (all origins, so the branch stays dashed)
   - B. Sánchez-Alonso, [The age of mass migration in Latin America](https://ehes.org/wp/EHES_134.pdf), EHES working paper 134: Argentina and Brazil
