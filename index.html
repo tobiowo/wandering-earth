@@ -71,6 +71,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #t{width:100%;accent-color:var(--accent)}
 .ticks{position:relative;height:18px;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+@media (max-width:760px){.ticks span.minor{display:none}}
 .era-band{position:relative;height:6px;border-radius:3px;overflow:hidden;display:flex;margin:0 8px}
 .era-band i{display:block;height:100%}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -218,9 +219,10 @@ const NOW=2026;
 const ya = yr => NOW - yr; // calendar year -> years ago
 
 // ---------- time scale: log of (years ago + C) ----------
-const YMAX=3e8, C=30, LA=Math.log10(YMAX+C), LB=Math.log10(C);
-const s2y = s => Math.max(0, Math.pow(10, LA + (LB-LA)*s) - C);
-const y2s = y => (Math.log10(y + C) - LA) / (LB - LA);
+// piecewise log scale: deep time 0–26%, early humans 26–44%, last 12,000 years 44–72%, since 1500 CE 72–100%
+const C=30, ANCH=[[3e8,0],[2e6,0.26],[1.2e4,0.44],[ya(1500),0.72],[0,1]].map(([y,s])=>[Math.log10(y+C),s]);
+function s2y(s){ s=Math.max(0,Math.min(1,s)); for(let i=1;i<ANCH.length;i++) if(s<=ANCH[i][1]){const [l0,s0]=ANCH[i-1],[l1,s1]=ANCH[i];return Math.max(0,Math.pow(10,l0+(l1-l0)*(s-s0)/(s1-s0))-C);} return 0; }
+function y2s(y){ const l=Math.log10(Math.max(0,y)+C); for(let i=1;i<ANCH.length;i++) if(l>=ANCH[i][0]){const [l0,s0]=ANCH[i-1],[l1,s1]=ANCH[i];return s0+(s1-s0)*(l0-l)/(l0-l1);} return 1; }
 
 // ---------- routes (years ago at each waypoint) ----------
 // cat: pre | holo | forced | vol
@@ -292,9 +294,18 @@ const EV=[
  [2.6e4,'Last Glacial Maximum','Ice age land bridges','Sea level is about 120 m lower. Beringia joins Siberia and Alaska; people cross into the Americas.'],
  [1.45e4,'Late Glacial','Southern tip of the Americas','Monte Verde in southern Chile is occupied by about 14,500 years ago.'],
  [1.15e4,'Holocene','Farming begins','Wheat, barley, goats and sheep are domesticated in the Fertile Crescent; farming also starts independently in China, New Guinea, Mesoamerica and the Andes.'],
- [5e3,'Bronze Age','Farmers, herders and sailors spread','Bantu-speaking farmers spread across Africa, Austronesians sail from Taiwan, and steppe herders move into Europe and South Asia.'],
+ [9e3,'Neolithic','Farming spreads','Farmers move from Anatolia into Greece and the Balkans. Rice is being cultivated along the Yangtze, and maize is being domesticated in Mexico.'],
+ [7.5e3,'Neolithic','Farmers reach central Europe','Farming villages spread along the Danube to the Rhine within a few centuries, carried mostly by migrating farmers rather than locals adopting crops.'],
+ [5.2e3,'Bronze Age','Cities and writing','The first cities and writing appear in Mesopotamia and Egypt. From here on the map also shows approximate borders of states and peoples.'],
+ [4.8e3,'Bronze Age','Farmers, herders and sailors spread','Bantu-speaking farmers spread across Africa, Austronesians sail from Taiwan, and steppe herders move into Europe and South Asia.'],
  [3e3,'Iron Age','Into Remote Oceania','Lapita voyagers reach Vanuatu, Fiji, Tonga and Samoa, islands no human had seen before.'],
+ [ya(-550),'Classical','The largest empire yet','The Achaemenid Persian Empire stretches across three continents, from Egypt and Anatolia to the Indus valley.'],
+ [2.1e3,'Classical','Rome and Han China','Two empires of similar size may rule about half of humanity between them, linked by the trade routes later called the Silk Road.'],
+ [ya(400),'Late antiquity','Peoples on the move','Germanic, Hunnic and Slavic migrations reshape Europe as the Western Roman Empire breaks apart (476 CE).'],
+ [ya(632),'Early medieval','The Arab expansion','Within about a century, Arab armies carry Islam from Spain and North Africa to Central Asia.'],
  [ya(1000),'Medieval','The last places settled','Polynesians reach Hawaiʻi, Rapa Nui and finally Aotearoa New Zealand. Norse and Thule Inuit reach Greenland.'],
+ [ya(1206),'Medieval','The Mongol Empire','Genghis Khan and his successors build the largest contiguous land empire in history, from Korea to Hungary.'],
+ [ya(1492),'Early modern','Contact across the Atlantic','Columbus reaches the Caribbean. Over the next century Indigenous populations of the Americas collapse, by as much as 90% in many regions, mainly from introduced diseases.'],
  [ya(1501),'Early modern','The Atlantic slave trade','Over 365 years about 12.5 million Africans are forced onto ships bound for the Americas; about 10.7 million survive the voyage.'],
  [ya(1846),'Industrial age','The great migrations','Steamships and railways carry about 150 million people in three huge streams: from Europe to the Americas, from India and China to Southeast Asia, and into North Asia.'],
  [ya(1944),'Mid-20th century','War and partition','Millions are expelled after World War II, and about 15 million cross borders during the Partition of India in 1947.'],
@@ -303,7 +314,7 @@ const EV=[
  [ya(2024),'2024','304 million migrants','The number of international migrants has doubled since 1990. India, China and Mexico have the largest diasporas.'],
  [0,'Today','117.8 million forcibly displaced','UNHCR counted 117.8 million people displaced by conflict and persecution at the end of 2025, the first decline in ten years.'],
 ];
-const CHIPS=[['Pangaea',2.5e8],['Atlantic opens',1.8e8],['Dinosaurs end',6.6e7],['India meets Asia',5e7],['Homo sapiens',3e5],['Out of Africa',6e4],['Americas',1.6e4],['Farming spreads',8e3],['Polynesia',ya(1250)],['Slave trade',ya(1750)],['Mass migration',ya(1900)],['Today',0]];
+const CHIPS=[['Pangaea',2.5e8],['Atlantic opens',1.8e8],['Dinosaurs end',6.6e7],['India meets Asia',5e7],['Homo sapiens',3e5],['Out of Africa',6e4],['Americas',1.6e4],['Farming spreads',8e3],['First cities',5.2e3],['Rome & Han',2.1e3],['Mongols',ya(1230)],['Polynesia',ya(1260)],['Slave trade',ya(1750)],['Mass migration',ya(1900)],['Today',0]];
 
 // ---------- SVG setup ----------
 const W=960,H=500;
@@ -529,8 +540,8 @@ function setS(v,fromSlider){s=Math.max(0,Math.min(1,v)); if(!fromSlider) slider.
 slider.addEventListener('input',()=>{stop();setS(slider.value/1000,true);});
 // ticks
 const tk=document.getElementById('ticks');
-[[3e8,'300 Ma'],[1e8,'100 Ma'],[1e7,'10 Ma'],[1e6,'1 Ma'],[1e5,'100k yrs'],[1e4,'10k yrs'],[ya(1000),'1000 CE'],[ya(1900),'1900'],[0,'Now']].forEach(([y,l])=>{
-  const sp=document.createElement('span'); sp.textContent=l; sp.style.left=`calc(${y2s(y)*100}% + ${8-16*y2s(y)}px)`; if(y2s(y)>0.97) sp.style.transform='translateX(-100%)'; if(y2s(y)<0.02) sp.style.transform='none'; tk.appendChild(sp);});
+[[3e8,'300 Ma'],[1e7,'10 Ma'],[1e6,'1 Ma'],[1e5,'100k yrs'],[1.2e4,'10,000 BCE'],[ya(-3000),'3000 BCE'],[ya(1),'1 CE'],[ya(1000),'1000'],[ya(1500),'1500'],[ya(1800),'1800'],[ya(1900),'1900'],[ya(1990),'1990'],[0,'Now']].forEach(([y,l],i)=>{
+  const sp=document.createElement('span'); sp.textContent=l; if([1,3,6,8,11].includes(i)) sp.className='minor'; sp.style.left=`calc(${y2s(y)*100}% + ${8-16*y2s(y)}px)`; if(y2s(y)>0.97) sp.style.transform='translateX(-100%)'; if(y2s(y)<0.02) sp.style.transform='none'; tk.appendChild(sp);});
 // era band: geologic vs human
 const band=document.getElementById('band');
 [[3e8,2e6,'var(--land)'],[2e6,1.2e4,'var(--c-pre)'],[1.2e4,ya(1500),'var(--c-holo)'],[ya(1500),0,'var(--c-vol)']].forEach(([a,b,c])=>{const i=document.createElement('i');i.style.width=((y2s(b)-y2s(a))*100)+'%';i.style.background=c;i.style.opacity=.7;band.appendChild(i);});
@@ -542,7 +553,7 @@ document.querySelectorAll('#layers button[data-l]').forEach(b=>b.addEventListene
 // play
 const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let raf=null,lastT=0; const playBtn=document.getElementById('play');
-function frame(t){const dt=lastT?Math.min(0.05,(t-lastT)/1000):0;lastT=t; setS(s+dt/75); if(s>=1){stop();return;} raf=requestAnimationFrame(frame);}
+function frame(t){const dt=lastT?Math.min(0.05,(t-lastT)/1000):0;lastT=t; setS(s+dt/90); if(s>=1){stop();return;} raf=requestAnimationFrame(frame);}
 function start(){if(s>=0.999)setS(0);lastT=0;playBtn.textContent='Pause';raf=requestAnimationFrame(frame);}
 function stop(){if(raf)cancelAnimationFrame(raf);raf=null;playBtn.textContent='Play';if(anim){cancelAnimationFrame(anim);anim=null;}}
 playBtn.addEventListener('click',()=>raf?stop():start());
