@@ -27,13 +27,14 @@ The page is a single static `index.html` with no build step. It loads d3 and top
   - A. McKeown, ["Global Migration, 1846–1940"](https://historycooperative.org/journal/global-migration-1846-1940/), *Journal of World History* (2004): European, South Asian, southern Chinese and North Asian streams
   - T. Hatton & J. Williamson, *The Age of Mass Migration: Causes and Economic Impact*, Oxford University Press (1998), chapter 2: return migration, Canada context
   - R. Abramitzky & L. Boustan, ["Immigration in American Economic History"](https://doi.org/10.1257/jel.20151189), *Journal of Economic Literature* (2017): United States, return migration
-  - M. Boyd & M. Vickers, ["100 years of immigration in Canada"](https://www150.statcan.gc.ca/n1/pub/11-008-x/2000002/article/5164-fra.pdf), *Canadian Social Trends*, Statistics Canada (2000): Canada (all origins, so the branch stays dashed)
+  - M. Boyd & M. Vickers, ["100 years of immigration in Canada"](https://www150.statcan.gc.ca/n1/pub/11-008-x/2000002/article/5164-fra.pdf), *Canadian Social Trends*, Statistics Canada (2000): Canada arrivals 1900–1914
+  - Statistics Canada, [Historical Statistics of Canada](https://www150.statcan.gc.ca/n1/en/catalogue/11-516-X), series A297–326 (European-born residents at the 1931 census, used for the Canada branch) and A350 (immigrant arrivals 1852–1977)
   - B. Sánchez-Alonso, [The age of mass migration in Latin America](https://ehes.org/wp/EHES_134.pdf), EHES working paper 134: Argentina and Brazil
   - UK National Archives, [The age of mass migration](https://www.nationalarchives.gov.uk/explore-the-collection/explore-by-time-period/victorians/age-of-mass-migration/): Australia and New Zealand
   - US National Archives, [The Great Migration](https://www.archives.gov/research/african-americans/migrations/great-migration)
   - Statistisches Bundesamt (1958), via [Demographic estimates of the flight and expulsion of Germans](https://en.wikipedia.org/wiki/Demographic_estimates_of_the_flight_and_expulsion_of_Germans)
   - J. Chatterji, ["Partitioned Lands, Partitioned Histories"](https://www.cambridge.org/core/books/from-the-ashes-of-1947/partitioned-lands-partitioned-histories/5E2B0F0753C59835EB27762D5B407F8E), in *From the Ashes of 1947*: Partition
-  - Gaps: no European-only count for Canada, no count for South Africa, and no Punjab/Bengal split for Partition.
+  - Gaps: no count for South Africa, and no Punjab/Bengal split for Partition. The Canada branch uses a census count of European-born residents (a stock), while most other branches count arrivals or settlers.
 - **Modern figures cited on the page:** IOM, *World Migration Report 2026*; UNHCR, *Global Trends* (June 2026); World Bank remittance estimates (2024).
 
 ## Caveats
