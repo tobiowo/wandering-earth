@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="An interactive map from Pangaea 300 million years ago to the 304 million international migrants of today.">
+<title>Wandering Earth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+/* Layout: one map stage with a log-time scrubber beneath, then a "today" data band. */
+:root{
+  --bg:#eef2f1; --panel:#ffffff; --ink:#15212a; --muted:#56656e; --line:#cfd9db;
+  --ocean:#cfdee2; --grid:#b7cbd0; --land:#c4b796; --land-edge:#978a6b;
+  --p-deep:#c3d6dc; --p-shelf:#9fc6cf; --p-low:#a9bf8f; --p-up:#c8b98a; --p-high:#a78f68; --p-peak:#f2efe6;
+  --accent:#0b6e78;
+  --c-pre:#d0491a; --c-holo:#6741d9; --c-forced:#c2185b; --c-vol:#1864ab; --c-dia:#e67700; --c-dest:#0b7285;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1216; --panel:#121b21; --ink:#e6ecee; --muted:#93a3ab; --line:#25343c;
+  --ocean:#11242c; --grid:#1d3742; --land:#56604c; --land-edge:#7b876d;
+  --p-deep:#0f2129; --p-shelf:#1e4652; --p-low:#4f6447; --p-up:#6f6a4c; --p-high:#8a7656; --p-peak:#d9d4c6;
+  --accent:#4fc3c9;
+  --c-pre:#ff7a45; --c-holo:#a48bff; --c-forced:#ff5c93; --c-vol:#5aa9ff; --c-dia:#ffb02e; --c-dest:#3bc9db;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1216; --panel:#121b21; --ink:#e6ecee; --muted:#93a3ab; --line:#25343c;
+  --ocean:#11242c; --grid:#1d3742; --land:#56604c; --land-edge:#7b876d;
+  --p-deep:#0f2129; --p-shelf:#1e4652; --p-low:#4f6447; --p-up:#6f6a4c; --p-high:#8a7656; --p-peak:#d9d4c6;
+  --accent:#4fc3c9;
+  --c-pre:#ff7a45; --c-holo:#a48bff; --c-forced:#ff5c93; --c-vol:#5aa9ff; --c-dia:#ffb02e; --c-dest:#3bc9db;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;gap:6px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,5vw,52px);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);max-width:68ch;margin:0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mapbox{position:relative}
+.mapbox{background:var(--panel)}
+#map{display:block;width:100%;height:auto;position:relative}
+#paleo{position:absolute;left:0;top:0;width:100%;height:auto;aspect-ratio:960/500;pointer-events:none}
+.plegend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;color:var(--ink);background:color-mix(in srgb,var(--panel) 78%,transparent);padding:5px 8px;border-radius:6px;pointer-events:none;max-width:calc(100% - 24px)}
+.plegend span{display:inline-flex;align-items:center;gap:5px}
+.plegend i{width:10px;height:10px;border-radius:2px;display:inline-block;border:1px solid var(--line)}
+.readout{position:absolute;left:14px;top:12px;pointer-events:none;display:grid;gap:2px;max-width:calc(100% - 28px)}
+.when{font-family:var(--display);font-weight:700;font-size:clamp(20px,3.4vw,34px);line-height:1.05;letter-spacing:-.01em;text-shadow:0 0 8px var(--panel),0 0 2px var(--panel)}
+.period{font-family:var(--mono);font-size:12px;color:var(--muted);text-shadow:0 0 6px var(--panel)}
+.note{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:14px 18px;border-top:1px solid var(--line);min-height:76px}
+.note .tag{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;margin-top:2px}
+.note h3{margin:0;font-family:var(--display);font-size:18px;font-weight:600}
+.note p{margin:2px 0 0;color:var(--muted);max-width:80ch}
+
+.controls{display:grid;gap:10px;padding:14px 18px 16px;border-top:1px solid var(--line)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#play{background:var(--accent);color:var(--panel);border-color:var(--accent);font-weight:600;min-width:84px}
+.track{position:relative;flex:1;min-width:220px}
+#t{width:100%;accent-color:var(--accent)}
+.ticks{position:relative;height:18px;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.era-band{position:relative;height:6px;border-radius:3px;overflow:hidden;display:flex;margin:0 8px}
+.era-band i{display:block;height:100%}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font-size:12px;padding:4px 10px;border-radius:999px}
+.chips button.on{border-color:var(--accent);color:var(--accent)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+.legend i.dot{width:10px;height:10px;border-radius:50%}
+.layers{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.layers button{font-size:12px;padding:3px 10px}
+.layers button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--panel);font-size:12px;line-height:1.35;padding:7px 9px;border-radius:7px;max-width:260px;z-index:5}
+
+section.today{display:grid;gap:18px}
+section.today h2{font-family:var(--display);font-size:clamp(24px,3.4vw,34px);margin:0;letter-spacing:-.01em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
+.kpi b{font-family:var(--display);font-size:32px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.kpi small{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:10px;min-width:0;align-content:start}
+.card.explorer{grid-column:1/-1}
+.grid2.inner{gap:24px}
+.col{display:grid;gap:8px;align-content:start;min-width:0}
+select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 8px;max-width:220px}
+.card h3{margin:0;font-family:var(--display);font-size:18px;font-weight:600}
+.card .src{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.bars{display:grid;gap:5px}
+.bar{display:grid;grid-template-columns:118px 1fr 52px;gap:8px;align-items:center;font-size:13px}
+.bars.wide .bar{grid-template-columns:190px 1fr 40px}
+@media (max-width:560px){.bars.wide .bar{grid-template-columns:150px 1fr 36px}}
+.bar .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .v{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.bar .fill{height:10px;border-radius:2px}
+.flows{display:grid;gap:8px}
+.flow{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:13px;border-bottom:1px solid var(--line);padding-bottom:7px}
+.flow:last-child{border-bottom:0}
+.flow .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.flow .meter{grid-column:1/-1;height:4px;border-radius:2px;background:var(--c-vol)}
+#stock{width:100%;height:auto;display:block}
+.sources{font-size:12px;color:var(--muted);display:grid;gap:4px}
+.sources a{color:var(--accent)}
+.caveat{font-size:12px;color:var(--muted);max-width:90ch;margin:0}
+@media (max-width:560px){.bar{grid-template-columns:92px 1fr 46px}.note{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">300 million years · one map</div>
+    <h1>Wandering Earth</h1>
+    <p class="sub">Drag the timeline to watch the continents pull apart from Pangaea, then follow people out of Africa, across oceans and borders, up to where the world's 304 million migrants live today.</p>
+  </header>
+
+  <div class="stage">
+    <div class="mapbox" id="mapbox">
+      <canvas id="paleo" width="1200" height="625" aria-hidden="true"></canvas>
+      <svg id="map" viewBox="0 0 960 500" role="img" aria-label="World map showing continental drift and human migration at the selected time"></svg>
+      <div class="readout"><div class="when" id="when"></div><div class="period" id="period"></div></div>
+      <div class="plegend" id="plegend" aria-hidden="true"><span><i style="background:var(--p-deep)"></i>Deep ocean</span><span><i style="background:var(--p-shelf)"></i>Shallow sea</span><span><i style="background:var(--p-low)"></i>Lowland</span><span><i style="background:var(--p-up)"></i>Upland</span><span><i style="background:var(--p-high)"></i>Mountains</span></div>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <div class="note" id="note"><span class="tag" id="ntag"></span><div><h3 id="ntitle"></h3><p id="ntext"></p></div></div>
+    <div class="controls">
+      <div class="row">
+        <button id="play" type="button">Play</button>
+        <div class="track">
+          <div class="era-band" id="band"></div>
+          <input id="t" type="range" min="0" max="1000" step="1" value="0" aria-label="Time">
+          <div class="ticks" id="ticks"></div>
+        </div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="row" style="justify-content:space-between">
+        <div class="legend">
+          <span><i style="background:var(--c-pre)"></i>Early human dispersal</span>
+          <span><i style="background:var(--c-holo)"></i>Farmers, seafarers, herders</span>
+          <span><i style="background:var(--c-forced)"></i>Forced migration</span>
+          <span><i style="background:var(--c-vol)"></i>Mass &amp; labour migration</span>
+          <span><i class="dot" style="background:var(--c-dia)"></i>Diaspora (by origin)</span>
+          <span><i class="dot" style="border:2px solid var(--c-dest)"></i>Migrants hosted</span>
+          <span style="color:var(--muted)">Click a circle to map one country</span>
+        </div>
+        <div class="layers" id="layers">Layers:
+          <button type="button" data-l="bord" aria-pressed="true">Borders</button>
+          <button type="button" data-l="dia" aria-pressed="true">Diasporas</button>
+          <button type="button" data-l="dest" aria-pressed="false">Destinations</button>
+          <button type="button" data-l="cor" aria-pressed="true">Top 25 corridors</button>
+          <button type="button" id="clearfocus" hidden>Clear country</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="today">
+    <div class="eyebrow">Migration now</div>
+    <h2>Who has moved, and where they live</h2>
+    <div class="kpis">
+      <div class="kpi"><b>304M</b><span>international migrants, 3.7% of humanity</span><small>UN DESA · mid-2024</small></div>
+      <div class="kpi"><b>167.7M</b><span>migrant workers in the global labour force</span><small>IOM WMR 2026</small></div>
+      <div class="kpi"><b>117.8M</b><span>forcibly displaced, the first fall in a decade</span><small>UNHCR · end-2025</small></div>
+      <div class="kpi"><b>$905B</b><span>in remittances, $685B of it to low- and middle-income countries</span><small>World Bank via IOM · 2024</small></div>
+      <div class="kpi"><b>80,000+</b><span>migrant deaths and disappearances recorded since 2014, 7,900+ in 2025</span><small>IOM Missing Migrants Project</small></div>
+    </div>
+    <div class="grid2">
+      <div class="card explorer"><div class="row" style="justify-content:space-between"><h3>Country explorer</h3><div class="row" style="gap:8px"><label for="cty" class="src">Country</label><select id="cty"></select><button id="showmap" type="button">Show on map</button><button id="clearmap" type="button" hidden>Clear map</button></div></div><div class="src" id="cty-sum"></div><div class="grid2 inner"><div class="col"><div class="src">Where people born here live, 2024</div><div class="bars" id="x-out"></div></div><div class="col"><div class="src">Where its foreign-born residents come from, 2024</div><div class="bars" id="x-in"></div></div></div></div>
+      <div class="card"><h3>Largest diasporas</h3><div class="src">People born in each country, living abroad · millions · UN DESA 2024</div><div class="bars" id="b-dia"></div></div>
+      <div class="card"><h3>Where migrants live</h3><div class="src">Foreign-born residents · millions · UN DESA 2024</div><div class="bars" id="b-dest"></div></div>
+      <div class="card"><h3>20 biggest country corridors</h3><div class="src">People born in the first country living in the second · millions · UN DESA 2024 (flows within one country and its territories, such as China → Hong Kong, are left out)</div><div class="bars wide" id="f-cor"></div></div>
+      <div class="card"><h3>Biggest regional corridors</h3><div class="src">Millions · UN DESA 2024</div><div class="flows" id="f-reg"></div></div>
+      <div class="card"><h3>Global migrant stock</h3><div class="src">Millions · UN DESA via IOM World Migration Report 2026, Table 1</div><svg id="stock" viewBox="0 0 360 170"></svg></div>
+      <div class="card"><h3>Money sent home</h3><div class="src">Top recipients · US$ billions · World Bank 2024. In 2025 India passed $150B (IOM WMR 2026).</div><div class="bars" id="b-rem"></div><div class="src">Top senders · US$ billions · 2025 (IOM WMR 2026)</div><div class="bars" id="b-send"></div></div>
+    </div>
+    <p class="caveat">About the map: from 300 to about 2 million years ago the map shows the PALEOMAP paleo-elevation models of Scotese and Wright (2018), one every 5 million years, blended in between. They show where land, shallow seas and mountains were at each time, at 1° resolution. Reconstructions before about 200 million years ago are less certain because the seafloor that recorded plate motions has since been destroyed. After that, the map uses today's coastlines; ice-age sea levels are not drawn. Prehistoric routes are generalized paths through dated archaeological and genetic sites, and several dates, especially the first arrivals in Australia and the Americas, are still debated.</p>
+    <div class="sources">
+      <b style="color:var(--ink)">Sources</b>
+      <span>UN DESA Population Division, <a href="https://www.un.org/development/desa/pd/content/international-migrant-stock" target="_blank" rel="noopener">International Migrant Stock 2024</a> and <a href="https://www.un.org/development/desa/pd/sites/www.un.org.development.desa.pd/files/undesa_pd_2025_intlmigstock_2024_key_facts_and_figures_advance-unedited.pdf" target="_blank" rel="noopener">Key facts and figures</a></span>
+      <span>IOM, <a href="https://worldmigrationreport.iom.int/what-we-do/all-world-migration-reports" target="_blank" rel="noopener">World Migration Report 2026</a> (corridors, migrant stock since 1970, migrant workers, remittances, Missing Migrants data)</span>
+      <span>UNHCR, <a href="https://www.unhcr.org/th/en/ekiiywkab-unhcr/figure-glance" target="_blank" rel="noopener">Figures at a glance</a> (Global Trends, June 2026)</span>
+            <span>World Bank, <a href="https://blogs.worldbank.org/en/peoplemove/in-2024--remittance-flows-to-low--and-middle-income-countries-ar" target="_blank" rel="noopener">Remittance flows 2024</a></span>
+      <span>SlaveVoyages, <a href="https://www.slavevoyages.org/assessment/estimates" target="_blank" rel="noopener">Trans-Atlantic Slave Trade estimates</a> · A. McKeown, "Global Migration, 1846–1940", Journal of World History (2004)</span>
+      <span>Historical borders: A. Ourednik, <a href="https://github.com/aourednik/historical-basemaps" target="_blank" rel="noopener">historical-basemaps</a> (GPL-3.0), simplified. A work in progress; ancient borders are approximate.</span>
+      <span>Coastlines: Natural Earth via world-atlas. Ancient geography: C. R. Scotese &amp; N. M. Wright (2018), <a href="https://zenodo.org/records/5460860" target="_blank" rel="noopener">PALEOMAP Paleodigital Elevation Models</a> (CC BY 4.0).</span>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script src="data/plates.js"></script>
+<script src="data/paleo.js"></script>
+<script src="data/mig.js"></script>
+<script src="data/cent.js"></script>
+<script src="data/borders.js"></script>
+<script>
+(function(){
+const NAMES={AF:'Africa',SA:'South America',NA:'North America',EU:'Eurasia',IN:'India',AU:'Australia',AN:'Antarctica'};
+const TINT={AF:'#d98c5f',SA:'#7fb069',NA:'#5b8fc9',EU:'#c9a94a',IN:'#d9575b',AU:'#9a7fd1',AN:'#b8c4c9'};
+const NOW=2026;
+const ya = yr => NOW - yr; // calendar year -> years ago
+
+// ---------- time scale: log of (years ago + C) ----------
+const YMAX=3e8, C=30, LA=Math.log10(YMAX+C), LB=Math.log10(C);
+const s2y = s => Math.max(0, Math.pow(10, LA + (LB-LA)*s) - C);
+const y2s = y => (Math.log10(y + C) - LA) / (LB - LA);
+
+// ---------- routes (years ago at each waypoint) ----------
+// cat: pre | holo | forced | vol
+const ROUTES=[
+ {cat:'pre',name:'Homo erectus leaves Africa',note:'Dmanisi, Georgia (~1.8 million years ago); Java later.',pts:[[37,3,1.95e6],[36,32,1.85e6],[44.3,41.3,1.8e6],[75,25,1.5e6],[110.9,-7.5,1.3e6]],rest:.25},
+ {cat:'pre',name:'Homo sapiens in Africa',note:'Jebel Irhoud, Morocco (~300k) and Omo Kibish, Ethiopia (~233k).',pts:[[-8.9,31.9,3.1e5],[3,22,2.9e5],[20,12,2.6e5],[35.9,5.4,2.33e5],[30,-10,2e5],[25,-30,1.6e5]],rest:.35},
+ {cat:'pre',name:'Southern route out of Africa',note:'Across the Bab-el-Mandeb strait along the Arabian and Indian coasts (~70–55k years ago).',pts:[[39,9,7.2e4],[43.3,12.6,6.8e4],[51,18,6.4e4],[57,25,6.1e4],[67,24.5,5.8e4],[80,13,5.5e4],[98,15,5.2e4]],rest:.4},
+ {cat:'pre',name:'Into Sahul (Australia & New Guinea)',note:'Island-hopping from Sunda at low sea level; occupation by at least ~50k years ago (older dates debated).',pts:[[98,15,5.2e4],[104,1,5e4],[116,-8,4.9e4],[128,-11,4.8e4],[132.9,-12.3,4.7e4],[145,-20,4.2e4],[147,-38,3.8e4]],rest:.4},
+ {cat:'pre',name:'Levant into Europe',note:'Bacho Kiro, Bulgaria (~45k); Neanderthal admixture happened along the way.',pts:[[35,31,5.8e4],[34,38,5e4],[25.4,42.9,4.5e4],[15,47,4.3e4],[2,46,4.1e4],[-4,40,3.8e4]],rest:.4},
+ {cat:'pre',name:'Across Asia to China and Japan',note:'Tianyuan Cave near Beijing (~40k); Japan by ~38k.',pts:[[98,15,5.2e4],[103,26,4.8e4],[110,33,4.4e4],[115.9,39.7,4e4],[127,37,3.9e4],[138,36,3.8e4]],rest:.4},
+ {cat:'pre',name:'Into the Arctic',note:'Yana RHS site, Siberia (~32k).',pts:[[57,25,6e4],[66,38,4.8e4],[80,50,4.3e4],[105,55,3.8e4],[135.2,70.7,3.2e4],[165,66,2.8e4]],rest:.4},
+ {cat:'pre',name:'Beringia into the Americas',note:'Across the exposed Bering land bridge and down the Pacific coast. White Sands, New Mexico footprints (~23–21k); Monte Verde, Chile (~14.5k).',pts:[[165,66,2.8e4],[-168,65,2.6e4],[-150,60,2.4e4],[-128,50,2.35e4],[-106.3,32.8,2.2e4],[-100,20,1.65e4],[-80,8.5,1.55e4],[-75,-5,1.5e4],[-73.2,-41.5,1.45e4],[-70,-52,1.2e4]],rest:.4},
+ {cat:'pre',name:'Into eastern North America',note:'Spread across the continent; Clovis tools appear ~13k years ago.',pts:[[-106.3,32.8,2.2e4],[-98,38,1.6e4],[-88,40,1.4e4],[-77,39,1.3e4]],rest:.4},
+ {cat:'holo',name:'Farming spreads into Europe',note:'From Anatolia (~9,000 years ago) through the Balkans to Britain (~6,000).',pts:[[37,37,1.05e4],[33,38.5,9.5e3],[23,40,8.5e3],[17,46,7.8e3],[11,50,7.4e3],[3,49,6.8e3],[-1.5,52,6e3]],rest:.3},
+ {cat:'holo',name:'Steppe herders',note:'Yamnaya-related ancestry spreads west to Europe (~4,800 years ago) and south into South Asia (~4,000–3,500).',pts:[[46,48,5.2e3],[30,48,5e3],[15,51,4.7e3],[5,52,4.5e3]],rest:.3},
+ {cat:'holo',name:'Steppe herders to South Asia',note:'',pts:[[46,48,5.2e3],[60,45,4.5e3],[67,37,4e3],[75,30,3.6e3]],rest:.3},
+ {cat:'holo',name:'Bantu expansion',note:'From the Nigeria–Cameroon borderlands across central, eastern and southern Africa (~5,000–1,500 years ago).',pts:[[10,6,5e3],[16,1,4e3],[22,-3,3.3e3],[31,-2,2.6e3],[36,-8,2.1e3],[32,-20,1.7e3],[29,-27,1.5e3]],rest:.3},
+ {cat:'holo',name:'Bantu expansion, western stream',note:'',pts:[[16,1,4e3],[14,-8,3e3],[16,-16,2.2e3],[20,-22,1.8e3]],rest:.3},
+ {cat:'holo',name:'Austronesian voyaging',note:'Out of Taiwan (~5,000 years ago) through the Philippines and Indonesia.',pts:[[121,23.5,5e3],[121.5,15,4.2e3],[124,6,3.8e3],[118,-2,3.5e3],[110,-7,3e3]],rest:.3},
+ {cat:'holo',name:'Austronesians reach Madagascar',note:'A crossing of the Indian Ocean, ~1,500 years ago.',pts:[[110,-7,ya(300)],[90,-10,ya(450)],[65,-14,ya(550)],[47,-19,ya(650)]],rest:.3},
+ {cat:'holo',name:'Lapita and Polynesian voyaging',note:'Lapita potters reach Vanuatu and Fiji ~3,000 years ago; Polynesians settle Hawaiʻi, Rapa Nui and Aotearoa New Zealand by ~1200–1300 CE.',pts:[[124,6,3.8e3],[150,-4,3.4e3],[167,-16,3.05e3],[178,-18,2.95e3],[-172,-14,2.8e3],[-150,-17,ya(1025)],[-157,20,ya(1200)]],rest:.3},
+ {cat:'holo',name:'Polynesians reach Rapa Nui',note:'',pts:[[-150,-17,ya(1025)],[-130,-24,ya(1150)],[-109.4,-27.1,ya(1200)]],rest:.3},
+ {cat:'holo',name:'Polynesians reach Aotearoa',note:'',pts:[[-150,-17,ya(1025)],[-175,-30,ya(1200)],[174.8,-41,ya(1280)]],rest:.3},
+ {cat:'holo',name:'Norse voyages',note:'Iceland (874), Greenland (~985), Newfoundland (~1021 CE).',pts:[[6,61,ya(860)],[-19,64,ya(874)],[-45,61,ya(985)],[-55.5,51.6,ya(1021)]],rest:.25},
+ {cat:'holo',name:'Thule Inuit migration',note:'From Alaska across the Canadian Arctic to Greenland (~1000–1300 CE).',pts:[[-160,70,ya(1000)],[-125,70,ya(1150)],[-90,70,ya(1220)],[-60,72,ya(1280)],[-50,68,ya(1300)]],rest:.3},
+ // historic, volume in millions (m)
+ {cat:'forced',m:12.5,name:'Transatlantic slave trade',note:'1501–1866: about 12.5 million Africans embarked, about 10.7 million survived the crossing. Brazil received the most.',pts:[[3,6,ya(1501)],[-15,-2,ya(1600)],[-38.5,-12.9,ya(1700)]],end:ya(1866)},
+ {cat:'forced',m:6,name:'Slave trade to the Caribbean',note:'Part of the same 12.5 million: Jamaica, Saint-Domingue, Cuba and Barbados were major destinations.',pts:[[3,6,ya(1520)],[-30,13,ya(1620)],[-72,19,ya(1720)]],end:ya(1866)},
+ {cat:'forced',m:1.5,name:'Slave trade from West-Central Africa',note:'Angola and the Congo coast were the largest single region of embarkation.',pts:[[13,-8.8,ya(1560)],[-15,-12,ya(1650)],[-43,-22.9,ya(1740)]],end:ya(1866)},
+ {cat:'forced',m:.5,name:'Slave trade to North America',note:'About 400,000 people were brought to mainland North America.',pts:[[-15,13,ya(1620)],[-50,25,ya(1700)],[-79.9,32.8,ya(1760)]],end:ya(1866)},
+ {cat:'vol',m:55,name:'Europe to the Americas',note:'1846–1940: roughly 55–58 million Europeans emigrated, mostly to the US, with large flows to Argentina, Canada and Brazil (McKeown 2004).',pts:[[4,50,ya(1846)],[-30,46,ya(1870)],[-74,40.7,ya(1890)]],end:ya(1940)},
+ {cat:'vol',m:10,name:'Europe to South America',note:'Italians and Spaniards especially, to Argentina, Brazil and Uruguay.',pts:[[-4,40,ya(1860)],[-30,0,ya(1885)],[-58.4,-34.6,ya(1905)]],end:ya(1940)},
+ {cat:'vol',m:4,name:'Britain to Australia & New Zealand',note:'',pts:[[-1,52,ya(1850)],[20,-35,ya(1870)],[90,-40,ya(1890)],[151,-33.9,ya(1905)]],end:ya(1940)},
+ {cat:'vol',m:50,name:'India & southern China to Southeast Asia',note:'1846–1940: roughly 48–52 million people moved to Southeast Asia, the Indian Ocean rim and the South Pacific (McKeown 2004).',pts:[[113,23,ya(1846)],[110,12,ya(1870)],[103.8,1.35,ya(1895)]],end:ya(1940)},
+ {cat:'vol',m:20,name:'South Asia to Southeast Asia & beyond',note:'Indian workers went to Burma, Malaya, Ceylon, East Africa, the Caribbean and Fiji, many under indenture.',pts:[[80,13,ya(1850)],[92,12,ya(1870)],[96.2,16.8,ya(1890)]],end:ya(1940)},
+ {cat:'vol',m:48,name:'Into Manchuria, Siberia & Central Asia',note:'1846–1940: roughly 46–51 million people from northern China, Russia, Korea and Japan (McKeown 2004).',pts:[[116,38,ya(1860)],[123,42,ya(1885)],[126.6,45.8,ya(1910)]],end:ya(1940)},
+ {cat:'vol',m:20,name:'Russians to Siberia & Central Asia',note:'',pts:[[38,55,ya(1860)],[61,56,ya(1885)],[83,55,ya(1905)],[104,52,ya(1925)]],end:ya(1940)},
+ {cat:'vol',m:6,name:'Great Migration (US)',note:'1910–1970: about 6 million Black Americans moved from the rural South to northern and western cities.',pts:[[-90,32.5,ya(1910)],[-88,37,ya(1930)],[-87.6,41.9,ya(1950)]],end:ya(1970)},
+ {cat:'forced',m:12,name:'Expulsion of Germans from Eastern Europe',note:'1944–1950: roughly 12 million ethnic Germans fled or were expelled westward.',pts:[[21,52,ya(1944)],[16,52,ya(1946)],[10,51.5,ya(1948)]],end:ya(1955)},
+ {cat:'forced',m:15,name:'Partition of India',note:'1947: about 15 million people crossed the new borders between India and Pakistan.',pts:[[71,30,ya(1947)],[74.5,31,ya(1947.5)],[77.2,28.6,ya(1948)]],end:ya(1955)},
+ {cat:'forced',m:5,name:'Partition of Bengal',note:'',pts:[[90.4,23.8,ya(1947)],[88.4,22.6,ya(1948)]],end:ya(1955)},
+];
+
+// ---------- modern data ----------
+const REG=[['Latin America & Caribbean → Northern America',27],['Central & Southern Asia → N. Africa & Western Asia',20],['N. Africa & Western Asia → Europe',13],['Eastern & SE Asia → Northern America',12],['Central & Southern Asia → Europe',10]];
+const STOCK=[[1970,84.5],[1975,90.4],[1980,102],[1985,113.2],[1990,153.9],[1995,163.2],[2000,174.6],[2005,192.8],[2010,221],[2015,250],[2020,275.3],[2024,304]];
+const REM=[['India',129],['Mexico',68],['China',48],['Philippines',40],['Pakistan',33]];
+const SEND=[['United States',107],['Saudi Arabia',58],['Switzerland',43],['Germany',27]];
+
+// ---------- events (shown as the note for the time just after) ----------
+const EV=[
+ [3e8,'Carboniferous','Continents converge','The landmasses are colliding into one supercontinent, Pangaea, ringed by a single global ocean, Panthalassa.'],
+ [2.52e8,'Permian–Triassic','Pangaea assembled','The end-Permian extinction (252 million years ago) wipes out roughly 90% of marine species.'],
+ [2.0e8,'Early Jurassic','Pangaea starts to split','The Central Atlantic opens between North America and Africa, soon after the end-Triassic extinction (201 million years ago).'],
+ [1.5e8,'Late Jurassic','Laurasia and Gondwana','A northern continent (Laurasia) and a southern one (Gondwana) separate. India, Antarctica and Australia are still joined to Africa.'],
+ [1.3e8,'Early Cretaceous','The South Atlantic opens','South America and Africa begin to tear apart along the line where their coastlines still match like puzzle pieces.'],
+ [1e8,'Mid-Cretaceous','Seas flood the continents','Sea level stands 100–250 m higher than today. A seaway splits North America in two and Europe is a scatter of islands.'],
+ [9e7,'Late Cretaceous','India breaks away','India splits from Madagascar and races north at up to 15–20 cm per year, among the fastest plate motions known.'],
+ [6.6e7,'K–Pg boundary','The dinosaurs end','An asteroid strikes Chicxulub, Mexico, 66 million years ago, while the Deccan Traps erupt across India.'],
+ [5.2e7,'Eocene','India meets Asia','The collision begins to push up the Himalaya and the Tibetan Plateau, a process still going on today.'],
+ [4.5e7,'Eocene','Australia pulls away','Australia separates from Antarctica and drifts north toward Asia.'],
+ [3.4e7,'Eocene–Oligocene','Antarctica freezes','Ocean gateways around Antarctica open, a circumpolar current forms, and a permanent ice sheet grows.'],
+ [3e6,'Pliocene','Panama links the Americas','The Isthmus of Panama closes, letting animals cross between the continents and reshaping ocean currents.'],
+ [1.9e6,'Pleistocene','The first to leave Africa','Homo erectus spreads into Eurasia, reaching Dmanisi in Georgia by 1.8 million years ago.'],
+ [3e5,'Middle Stone Age','Our species appears','The oldest Homo sapiens fossils come from Jebel Irhoud, Morocco, about 300,000 years ago.'],
+ [7.2e4,'Late Pleistocene','Out of Africa','A small population crosses into Arabia. Nearly everyone outside Africa today descends from this dispersal.'],
+ [5e4,'Late Pleistocene','Australia reached','People make open-sea crossings from Sunda to Sahul, the joined landmass of Australia and New Guinea.'],
+ [4.5e4,'Late Pleistocene','Europe and East Asia','Modern humans reach Europe and northern China, meeting and mixing with Neanderthals and Denisovans.'],
+ [2.6e4,'Last Glacial Maximum','Ice age land bridges','Sea level is about 120 m lower. Beringia joins Siberia and Alaska; people cross into the Americas.'],
+ [1.45e4,'Late Glacial','Southern tip of the Americas','Monte Verde in southern Chile is occupied by about 14,500 years ago.'],
+ [1.15e4,'Holocene','Farming begins','Wheat, barley, goats and sheep are domesticated in the Fertile Crescent; farming also starts independently in China, New Guinea, Mesoamerica and the Andes.'],
+ [5e3,'Bronze Age','Farmers, herders and sailors spread','Bantu-speaking farmers spread across Africa, Austronesians sail from Taiwan, and steppe herders move into Europe and South Asia.'],
+ [3e3,'Iron Age','Into Remote Oceania','Lapita voyagers reach Vanuatu, Fiji, Tonga and Samoa, islands no human had seen before.'],
+ [ya(1000),'Medieval','The last places settled','Polynesians reach Hawaiʻi, Rapa Nui and finally Aotearoa New Zealand. Norse and Thule Inuit reach Greenland.'],
+ [ya(1501),'Early modern','The Atlantic slave trade','Over 365 years about 12.5 million Africans are forced onto ships bound for the Americas; about 10.7 million survive the voyage.'],
+ [ya(1846),'Industrial age','The great migrations','Steamships and railways carry about 150 million people in three huge streams: from Europe to the Americas, from India and China to Southeast Asia, and into North Asia.'],
+ [ya(1944),'Mid-20th century','War and partition','Millions are expelled after World War II, and about 15 million cross borders during the Partition of India in 1947.'],
+ [ya(1970),'1970','84 million migrants','About 2.3% of the world lives outside its country of birth. The number will more than triple by 2024.'],
+ [ya(1990),'1990','154 million migrants','The UN counts 154 million people living outside their country of birth, 2.9% of the world population.'],
+ [ya(2024),'2024','304 million migrants','The number of international migrants has doubled since 1990. India, China and Mexico have the largest diasporas.'],
+ [0,'Today','117.8 million forcibly displaced','UNHCR counted 117.8 million people displaced by conflict and persecution at the end of 2025, the first decline in ten years.'],
+];
+const CHIPS=[['Pangaea',2.5e8],['Atlantic opens',1.8e8],['Dinosaurs end',6.6e7],['India meets Asia',5e7],['Homo sapiens',3e5],['Out of Africa',6e4],['Americas',1.6e4],['Farming spreads',8e3],['Polynesia',ya(1250)],['Slave trade',ya(1750)],['Mass migration',ya(1900)],['Today',0]];
+
+// ---------- SVG setup ----------
+const W=960,H=500;
+const svg=d3.select('#map');
+const proj=d3.geoNaturalEarth1().fitExtent([[6,6],[W-6,H-6]],{type:'Sphere'});
+const path=d3.geoPath(proj);
+const defs=svg.append('defs');
+defs.append('clipPath').attr('id','sph').append('path').attr('d',path({type:'Sphere'}));
+const oceanSph=svg.append('path').attr('d',path({type:'Sphere'})).attr('fill','var(--ocean)');
+svg.append('path').attr('d',path(d3.geoGraticule10())).attr('fill','none').attr('stroke','var(--grid)').attr('stroke-width',.5);
+const gLand=svg.append('g').attr('clip-path','url(#sph)');
+const gBord=svg.append('g').attr('clip-path','url(#sph)');
+const gBordLab=svg.append('g').attr('pointer-events','none');
+const gOceanLab=svg.append('g').attr('pointer-events','none');
+const gRoutes=svg.append('g').attr('fill','none').attr('stroke-linecap','round').attr('stroke-linejoin','round');
+const gHeads=svg.append('g').attr('pointer-events','none');
+const gModern=svg.append('g');
+const gLabels=svg.append('g').attr('pointer-events','none');
+
+const keys=Object.keys(PLATES);
+const landBase=gLand.selectAll('path.base').data(keys).join('path').attr('class','base').attr('fill','var(--land)').attr('stroke','var(--land-edge)').attr('stroke-width',.4);
+const oceanLab=gOceanLab.selectAll('text').data([['Panthalassa',[-140,5]],['Tethys',[80,5]],['Pangaea',[0,-15]],['Laurasia',[40,55]],['Gondwana',[15,-40]]]).join('text')
+  .attr('text-anchor','middle').style('font','italic 500 15px var(--display)').style('letter-spacing','.08em').attr('fill','var(--ink)').attr('fill-opacity',.7).attr('paint-order','stroke').attr('stroke','var(--panel)').attr('stroke-width',3).attr('stroke-opacity',.5).text(d=>d[0]);
+const presentGeo={}; keys.forEach(k=>presentGeo[k]={type:'MultiPolygon',coordinates:PLATES[k]});
+landBase.attr('d',k=>path(presentGeo[k]));
+
+// ---------- PaleoDEM raster (Scotese & Wright 2018), painted on canvas ----------
+const cv=document.getElementById('paleo'), cx=cv.getContext('2d');
+const CW=cv.width, CH=cv.height, KS=CW/W, GW=PALEO.w, GH=PALEO.h;
+const PAGES=PALEO.frames.map(f=>f[0]);
+const pCache={};
+function pFrame(i){ if(!pCache[i]){const b=atob(PALEO.frames[i][1]);const o=new Uint8Array(GW*GH);let k=0;for(let j=0;j<b.length;j+=2){const n=b.charCodeAt(j);o.fill(b.charCodeAt(j+1),k,k+n);k+=n;}pCache[i]=o;} return pCache[i]; }
+let LUT=null;
+function buildLUT(){
+  const N=CW*CH, i00=new Int32Array(N).fill(-1), i10=new Int32Array(N), i01=new Int32Array(N), i11=new Int32Array(N), fx=new Float32Array(N), fy=new Float32Array(N);
+  for(let py=0;py<CH;py++) for(let px=0;px<CW;px++){
+    const sx=(px+.5)/KS, sy=(py+.5)/KS, ll=proj.invert([sx,sy]); if(!ll) continue;
+    const back=proj(ll); if(!back||Math.abs(back[0]-sx)>.5||Math.abs(back[1]-sy)>.5) continue;
+    let gx=ll[0]+180, gy=90-ll[1]; if(gx>=360) gx-=360; gy=Math.min(GH-1.001,Math.max(0,gy));
+    const x0=Math.floor(gx), y0=Math.floor(gy), x1=(x0+1)%360, y1=y0+1, n=py*CW+px;
+    i00[n]=y0*GW+x0; i10[n]=y0*GW+x1; i01[n]=y1*GW+x0; i11[n]=y1*GW+x1; fx[n]=gx-x0; fy[n]=gy-y0;
+  }
+  LUT={i00,i10,i01,i11,fx,fy};
+}
+let PCOL=null;
+function readColors(){ const cs=getComputedStyle(document.documentElement); PCOL=['--p-deep','--p-shelf','--p-low','--p-up','--p-high','--p-peak'].map(v=>{const c=d3.rgb(cs.getPropertyValue(v).trim()||'#888');return [c.r,c.g,c.b];}); }
+const img=cx.createImageData(CW,CH); let lastPaleo=null;
+function paintPaleo(ageMa){
+  if(!LUT) buildLUT(); if(!PCOL) readColors();
+  const a=Math.max(0,Math.min(300,ageMa)); let i=0; while(i<PAGES.length-2&&PAGES[i+1]<a) i++;
+  const t=PAGES[i+1]>PAGES[i]?Math.min(1,Math.max(0,(a-PAGES[i])/(PAGES[i+1]-PAGES[i]))):0;
+  const key=i+':'+t.toFixed(3); if(key===lastPaleo) return; lastPaleo=key;
+  const A=pFrame(i), B=pFrame(i+1), d=img.data, {i00,i10,i01,i11,fx,fy}=LUT, u=1-t;
+  for(let n=0,p=0;n<i00.length;n++,p+=4){
+    const k=i00[n]; if(k<0){d[p+3]=0;continue;}
+    const v00=A[k]*u+B[k]*t, v10=A[i10[n]]*u+B[i10[n]]*t, v01=A[i01[n]]*u+B[i01[n]]*t, v11=A[i11[n]]*u+B[i11[n]]*t;
+    const X=fx[n], Y=fy[n], v=(v00*(1-X)+v10*X)*(1-Y)+(v01*(1-X)+v11*X)*Y;
+    const c=PCOL[v<.5?0:v<1.5?1:v<2.5?2:v<3.5?3:v<4.5?4:5]; d[p]=c[0];d[p+1]=c[1];d[p+2]=c[2];d[p+3]=255;
+  }
+  cx.putImageData(img,0,0);
+}
+try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{PCOL=null;lastPaleo=null;render(s2y(s));}); new MutationObserver(()=>{PCOL=null;lastPaleo=null;render(s2y(s));}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']}); }catch(e){}
+
+// routes
+const catColor={pre:'var(--c-pre)',holo:'var(--c-holo)',forced:'var(--c-forced)',vol:'var(--c-vol)'};
+ROUTES.forEach(r=>{r.start=r.pts[0][2]; r.done=r.pts[r.pts.length-1][2]; r.w = r.m? 1.4+Math.sqrt(r.m)*0.9 : (r.cat==='pre'?2.2:1.8);});
+const routeSel=gRoutes.selectAll('path').data(ROUTES).join('path').attr('stroke',d=>catColor[d.cat]).attr('stroke-width',d=>d.w).style('cursor','help');
+const headSel=gHeads.selectAll('circle').data(ROUTES).join('circle').attr('r',d=>Math.max(3,d.w*0.9)).attr('fill',d=>catColor[d.cat]).attr('stroke','var(--panel)').attr('stroke-width',1.2);
+
+function partial(r,y){
+  const p=r.pts; if(y>p[0][2]) return null;
+  const out=[[p[0][0],p[0][1]]];
+  for(let i=1;i<p.length;i++){
+    if(y<=p[i][2]){out.push([p[i][0],p[i][1]]);continue;}
+    const f=(p[i-1][2]-y)/(p[i-1][2]-p[i][2]);
+    out.push(d3.geoInterpolate([p[i-1][0],p[i-1][1]],[p[i][0],p[i][1]])(f));
+    return {coords:out,moving:true};
+  }
+  return {coords:out,moving:false};
+}
+function routeOpacity(r,y){
+  if(r.end!==undefined){ // historic: full until end, then fade by log time
+    if(y>=r.end) return 1;
+    const f=Math.min(1,(Math.log10(r.end+1)-Math.log10(y+1))/0.35); return 1-f*0.86;
+  }
+  if(y>=r.done) return 1;
+  const f=Math.min(1,(Math.log10(r.done)-Math.log10(y+1))/0.9); return 1-f*(1-r.rest);
+}
+
+// modern layer: UN DESA International Migrant Stock 2024, every country pair with 30,000+ people (values in thousands)
+const YRS=[1990,1995,2000,2005,2010,2015,2020,2024];
+function shortName(n){const m={'United States of America':'United States','Russian Federation':'Russia','Syrian Arab Republic':'Syria','China, Hong Kong SAR':'Hong Kong','China, Macao SAR':'Macao','China, Taiwan Province of China':'Taiwan','Republic of Korea':'South Korea',"Democratic People's Republic of Korea":'North Korea','Viet Nam':'Vietnam',"Lao People's Democratic Republic":'Laos','Republic of Moldova':'Moldova','United Republic of Tanzania':'Tanzania','Democratic Republic of the Congo':'DR Congo','State of Palestine':'Palestine','United Arab Emirates':'UAE','Bosnia and Herzegovina':'Bosnia and Herzegovina','Iran (Islamic Republic of)':'Iran','Venezuela (Bolivarian Republic of)':'Venezuela','Bolivia (Plurinational State of)':'Bolivia','Micronesia (Fed. States of)':'Micronesia','Kingdom of the Netherlands':'Netherlands'};return m[n]||n.replace(/\s*\(.*\)$/,'');}
+const NM={}; for(const k in MIG.names) NM[k]=shortName(MIG.names[k]);
+function at(a,yr){if(!a)return 0;if(yr<=1990)return a[0];if(yr>=2024)return a[7];let i=0;while(YRS[i+1]<=yr)i++;const f=(yr-YRS[i])/(YRS[i+1]-YRS[i]);return a[i]+(a[i+1]-a[i])*f;}
+const GROUPS=[[156,344,446,158],[840,630,316,850,580,16],[250,638,312,474,254,175,540,258,876,652,663,666],[826,292,833,832,831,60,92,136,500,654,796,238]];
+const grp=c=>GROUPS.findIndex(g=>g.includes(+c));
+const ALLPAIRS=MIG.pairs.filter(p=>CENT[p[0]]&&CENT[p[1]]).map(p=>({o:p[0],d:p[1],v:p.slice(2)}));
+const PAIRS=ALLPAIRS.filter(p=>{const a=grp(p.o);return a<0||a!==grp(p.d);}); // drop flows within one country and its territories
+const CODES=Object.keys(CENT).map(Number);
+const pt=c=>proj(CENT[c]);
+const fmtM=k=>k>=1000?(k/1000).toFixed(1)+'M':Math.max(1,Math.round(k))+'k';
+const rScale=k=>Math.sqrt(Math.max(0,k)/1000)*4.2;
+const gCor=gModern.append('g').attr('fill','none').attr('stroke-linecap','round');
+const destSel=gModern.append('g').selectAll('circle').data(CODES.filter(c=>MIG.imm[c]&&Math.max(...MIG.imm[c])>=250)).join('circle')
+  .attr('cx',c=>pt(c)[0]).attr('cy',c=>pt(c)[1]).attr('fill','none').attr('stroke','var(--c-dest)').attr('stroke-width',1.6).style('cursor','pointer');
+const diaSel=gModern.append('g').selectAll('circle').data(CODES.filter(c=>MIG.emi[c]&&Math.max(...MIG.emi[c])>=250)).join('circle')
+  .attr('cx',c=>pt(c)[0]).attr('cy',c=>pt(c)[1]).attr('fill','var(--c-dia)').attr('fill-opacity',.5).attr('stroke','var(--c-dia)').attr('stroke-width',.8).style('cursor','pointer');
+function arc(a,b){ // curved screen-space arc
+  const p=proj(a),q=proj(b); const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2, dx=q[0]-p[0], dy=q[1]-p[1], len=Math.max(1,Math.hypot(dx,dy));
+  const k=Math.min(.35,30/len+.18); return `M${p[0]},${p[1]}Q${mx+dy*k},${my-dx*k} ${q[0]},${q[1]}`;
+}
+const layerOn={dia:true,dest:false,cor:true,bord:true};
+// historical borders: aourednik/historical-basemaps snapshots, simplified
+const BYRS=Object.keys(BORDERS).map(Number).sort((a,b)=>a-b);
+const bCache={}; let curSnap=null;
+const BPAL=['#c0843d','#5f8f6b','#7a6bb0','#b55d5d','#4f86a8','#a88f3a','#8a5a8c','#4e9a95','#b0703f','#6d7fb3','#9a6b4f','#5a8f3c'];
+const hashC=n=>{let h=0;for(const ch of String(n))h=(h*31+ch.charCodeAt(0))>>>0;return BPAL[h%BPAL.length];};
+const yearLabel=v=>v<0?(-v)+' BCE':v+' CE';
+function snapFeatures(yr){ if(!bCache[yr]){const t=BORDERS[yr];const k=Object.keys(t.objects)[0];bCache[yr]=topojson.feature(t,t.objects[k]).features.filter(f=>f.geometry&&f.properties.NAME);} return bCache[yr]; }
+function drawBorders(yr){
+  curSnap=yr; const fs=snapFeatures(yr);
+  gBord.selectAll('path').data(fs).join('path').attr('d',path)
+    .attr('fill',f=>hashC(f.properties.SUBJECTO||f.properties.NAME)).attr('stroke','var(--ink)').attr('stroke-opacity',.35).attr('stroke-width',.5)
+    .attr('stroke-dasharray',f=>f.properties.BORDERPRECISION==1?'2 2':null).style('cursor','help')
+    .on('pointermove',(e,f)=>{const p=f.properties;showTip(e,`<b>${p.NAME}</b>${p.SUBJECTO&&p.SUBJECTO!==p.NAME?'<br>Under '+p.SUBJECTO:''}<br><span style="opacity:.75">Borders as of ${yearLabel(yr)}${p.BORDERPRECISION==1?', approximate':''}</span>`);}).on('pointerleave',hideTip);
+  const placed=[]; const big=fs.map(f=>({f,a:d3.geoArea(f)})).sort((a,b)=>b.a-a.a).slice(0,40);
+  const labs=[];
+  for(const {f} of big){const c=path.centroid(f); if(!isFinite(c[0]))continue; if(placed.some(q=>Math.abs(q[0]-c[0])<70&&Math.abs(q[1]-c[1])<16))continue; placed.push(c); labs.push({n:f.properties.NAME,c}); if(labs.length>=14)break;}
+  gBordLab.selectAll('text').data(labs).join('text').attr('x',d=>d.c[0]).attr('y',d=>d.c[1]).attr('text-anchor','middle')
+    .style('font','italic 500 10px var(--body)').attr('fill','var(--ink)').attr('paint-order','stroke').attr('stroke','var(--land)').attr('stroke-width',2.5).text(d=>d.n.length>22?d.n.slice(0,21)+'…':d.n);
+}
+let focus=null;
+const yrLab=yr=>String(Math.min(2024,Math.round(yr)));
+function updateModern(yr){
+  diaSel.attr('r',c=>rScale(at(MIG.emi[c],yr))).attr('display',layerOn.dia?null:'none').attr('opacity',c=>focus&&focus!==c?.2:1);
+  destSel.attr('r',c=>rScale(at(MIG.imm[c],yr))).attr('display',layerOn.dest?null:'none').attr('opacity',c=>focus&&focus!==c?.2:1);
+  let arcs=[];
+  if(focus){
+    const top=(list,dir)=>list.map(p=>({o:p.o,d:p.d,dir,val:at(p.v,yr)})).filter(p=>p.val>=1).sort((a,b)=>b.val-a.val).slice(0,10);
+    arcs=top(ALLPAIRS.filter(p=>p.o==focus),'out').concat(top(ALLPAIRS.filter(p=>p.d==focus),'in'));
+  } else if(layerOn.cor){
+    arcs=PAIRS.map(p=>({o:p.o,d:p.d,dir:'out',val:at(p.v,yr)})).sort((a,b)=>b.val-a.val).slice(0,25);
+  }
+  gCor.selectAll('path').data(arcs,d=>d.o+'-'+d.d+d.dir).join('path')
+    .attr('d',d=>arc(CENT[d.o],CENT[d.d])).attr('stroke',d=>d.dir==='in'?'var(--c-dest)':'var(--c-dia)')
+    .attr('stroke-width',d=>0.6+Math.sqrt(d.val/1000)*1.3).attr('stroke-opacity',.85).style('cursor','help')
+    .on('pointermove',(e,d)=>showTip(e,`<b>${NM[d.o]} → ${NM[d.d]}</b><br>${fmtM(d.val)} people born in ${NM[d.o]} living in ${NM[d.d]} (${yrLab(yr)})`)).on('pointerleave',hideTip);
+  modernYr=yr;
+}
+let modernYr=2024;
+
+// tooltip
+const tip=document.getElementById('tip'), box=document.getElementById('mapbox');
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const b=box.getBoundingClientRect();let x=e.clientX-b.left+12,y=e.clientY-b.top+12;if(x+260>b.width)x=Math.max(4,x-280);tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.hidden=true;}
+routeSel.on('pointermove',(e,d)=>showTip(e,`<b>${d.name}</b>${d.note?'<br>'+d.note:''}`)).on('pointerleave',hideTip);
+diaSel.on('pointermove',(e,c)=>showTip(e,`<b>${NM[c]}</b><br>${fmtM(at(MIG.emi[c],modernYr))} people born here live abroad (${yrLab(modernYr)})<br><i>Click to map them</i>`)).on('pointerleave',hideTip).on('click',(e,c)=>setFocus(c));
+destSel.on('pointermove',(e,c)=>showTip(e,`<b>${NM[c]}</b><br>${fmtM(at(MIG.imm[c],modernYr))} foreign-born residents (${yrLab(modernYr)})<br><i>Click to see where they come from</i>`)).on('pointerleave',hideTip).on('click',(e,c)=>setFocus(c));
+
+// ---------- formatting ----------
+const fmtInt=d3.format(',');
+function whenText(y){
+  if(y>=1e6){const m=y/1e6; return (m>=10?Math.round(m):m.toFixed(1).replace(/\.0$/,''))+' million years ago';}
+  if(y>NOW+0.5){const r=y>=1e5?Math.round(y/1000)*1000:y>=1e4?Math.round(y/100)*100:Math.round(y/10)*10; return fmtInt(r)+' years ago';}
+  const yr=Math.round(NOW-y); return yr>=NOW?'Today':yr+' CE';
+}
+function periodText(y){
+  const m=y/1e6;
+  const P=[[299,'Carboniferous'],[252,'Permian'],[201,'Triassic'],[145,'Jurassic'],[66,'Cretaceous'],[23,'Paleogene'],[2.58,'Neogene'],[0.0117,'Pleistocene · Ice Age'],[0,'Holocene']];
+  for(const [b,n] of P) if(m>=b) return n;
+  return 'Holocene';
+}
+
+// ---------- render ----------
+let last=-1;
+function render(y){
+  const ageMa=y/1e6;
+  // deep time: PaleoDEM raster; fades to today's coastlines between 2 and 0.3 million years ago
+  const paleoA=Math.max(0,Math.min(1,(Math.log10(y+1)-5.5)/0.8));
+  const deep=ageMa>2.1;
+  if(paleoA>0) paintPaleo(ageMa);
+  cv.style.opacity=paleoA.toFixed(3); document.getElementById('plegend').hidden=paleoA<0.5;
+  oceanSph.attr('fill-opacity',1-paleoA); gLand.attr('opacity',1-paleoA);
+  oceanLab.each(function(d){
+    const n=d[0]; let a=0;
+    if(n==='Panthalassa') a=ageMa>180?1:ageMa>150?(ageMa-150)/30:0;
+    if(n==='Pangaea') a=ageMa>200?1:ageMa>185?(ageMa-185)/15:0;
+    if(n==='Laurasia'||n==='Gondwana') a=(ageMa<185&&ageMa>110)?Math.min(1,(185-ageMa)/15,(ageMa-110)/15):0;
+    if(n==='Tethys') a=ageMa>60?Math.min(1,(ageMa-60)/20):0;
+    const p=proj(d[1]); d3.select(this).attr('x',p[0]).attr('y',p[1]).attr('opacity',a);
+  });
+  // routes
+  const modernA=y<=40?Math.min(1,(40-y)/12):0; // corridors & diasporas fade in from ~1986
+  routeSel.each(function(r){
+    const pr=deep&&ageMa>2.1?null:partial(r,y); const el=d3.select(this);
+    if(!pr){el.attr('d',null);return;}
+    let o=routeOpacity(r,y); if(modernA) o*=1-0.55*modernA;
+    el.attr('d',path({type:'LineString',coordinates:pr.coords})).attr('stroke-opacity',o);
+    r._tip=pr.moving?pr.coords[pr.coords.length-1]:null;
+  });
+  headSel.each(function(r){const el=d3.select(this); const pr=routeSel.filter(d=>d===r).attr('d'); if(!pr||!r._tip){el.attr('opacity',0);return;} const p=proj(r._tip); el.attr('cx',p[0]).attr('cy',p[1]).attr('opacity',1);});
+  // modern
+  gModern.attr('opacity',modernA).style('pointer-events',modernA>0.3?'auto':'none');
+  if(modernA>0) updateModern(NOW-y);
+  const yrC=NOW-y; let bA=0;
+  if(layerOn.bord&&yrC>=-3300){ const snap=BYRS.filter(v=>v<=Math.max(yrC,-3000)).pop(); if(snap!==curSnap) drawBorders(snap); bA=Math.min(1,(yrC+3300)/300); }
+  gBord.attr('opacity',bA).style('pointer-events',bA>0.5&&!modernA?'auto':'none'); gBord.selectAll('path').attr('fill-opacity',modernA?0.06:0.22);
+  gBordLab.attr('opacity',bA*(1-modernA));
+  // readout + note
+  document.getElementById('when').textContent=whenText(y);
+  document.getElementById('period').textContent=periodText(y)+(bA>0.5&&curSnap!=null?' · borders as of '+yearLabel(curSnap):'');
+  let ev=EV[0]; for(const e of EV) if(e[0]>=y-0.5) ev=e;
+  document.getElementById('ntag').textContent=ev[1];
+  document.getElementById('ntitle').textContent=ev[2];
+  document.getElementById('ntext').textContent=ev[3];
+  chipBtns.forEach(b=>b.classList.toggle('on',Math.abs(y2s(+b.dataset.y)-y2s(y))<0.004));
+}
+
+// ---------- controls ----------
+const slider=document.getElementById('t');
+let s=y2s(2.5e8);
+function setS(v,fromSlider){s=Math.max(0,Math.min(1,v)); if(!fromSlider) slider.value=Math.round(s*1000); render(s2y(s));}
+slider.addEventListener('input',()=>{stop();setS(slider.value/1000,true);});
+// ticks
+const tk=document.getElementById('ticks');
+[[3e8,'300 Ma'],[1e8,'100 Ma'],[1e7,'10 Ma'],[1e6,'1 Ma'],[1e5,'100k yrs'],[1e4,'10k yrs'],[ya(1000),'1000 CE'],[ya(1900),'1900'],[0,'Now']].forEach(([y,l])=>{
+  const sp=document.createElement('span'); sp.textContent=l; sp.style.left=`calc(${y2s(y)*100}% + ${8-16*y2s(y)}px)`; if(y2s(y)>0.97) sp.style.transform='translateX(-100%)'; if(y2s(y)<0.02) sp.style.transform='none'; tk.appendChild(sp);});
+// era band: geologic vs human
+const band=document.getElementById('band');
+[[3e8,2e6,'var(--land)'],[2e6,1.2e4,'var(--c-pre)'],[1.2e4,ya(1500),'var(--c-holo)'],[ya(1500),0,'var(--c-vol)']].forEach(([a,b,c])=>{const i=document.createElement('i');i.style.width=((y2s(b)-y2s(a))*100)+'%';i.style.background=c;i.style.opacity=.7;band.appendChild(i);});
+// chips
+const chipsEl=document.getElementById('chips');
+const chipBtns=CHIPS.map(([l,y])=>{const b=document.createElement('button');b.type='button';b.textContent=l;b.dataset.y=y;b.addEventListener('click',()=>{stop();animateTo(y2s(y));});chipsEl.appendChild(b);return b;});
+// layers
+document.querySelectorAll('#layers button[data-l]').forEach(b=>b.addEventListener('click',()=>{const l=b.dataset.l;layerOn[l]=!layerOn[l];b.setAttribute('aria-pressed',layerOn[l]);render(s2y(s));}));
+// play
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let raf=null,lastT=0; const playBtn=document.getElementById('play');
+function frame(t){const dt=lastT?Math.min(0.05,(t-lastT)/1000):0;lastT=t; setS(s+dt/75); if(s>=1){stop();return;} raf=requestAnimationFrame(frame);}
+function start(){if(s>=0.999)setS(0);lastT=0;playBtn.textContent='Pause';raf=requestAnimationFrame(frame);}
+function stop(){if(raf)cancelAnimationFrame(raf);raf=null;playBtn.textContent='Play';if(anim){cancelAnimationFrame(anim);anim=null;}}
+playBtn.addEventListener('click',()=>raf?stop():start());
+let anim=null;
+function animateTo(target){
+  if(reduce){setS(target);return;}
+  const from=s,t0=performance.now(),dur=900;
+  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; setS(from+(target-from)*e); if(k<1) anim=requestAnimationFrame(step); else anim=null;};
+  anim=requestAnimationFrame(step);
+}
+
+// ---------- today panel ----------
+function bars(id,data,color,unit){
+  const max=d3.max(data,d=>d[d.length-1]); const el=document.getElementById(id);
+  el.innerHTML=data.map(d=>{const v=d[d.length-1];return `<div class="bar"><span class="lab" title="${d[0]}">${d[0]}</span><span class="fill" style="width:${max?v/max*100:0}%;background:${color}"></span><span class="v">${unit==='$'?'$'+v:unit==='k'?(v?fmtM(v):''):unit==='2'?v.toFixed(2):v.toFixed(1)}</span></div>`;}).join('');
+}
+const topBy=(src,n)=>CODES.filter(c=>src[c]).sort((a,b)=>src[b][7]-src[a][7]).slice(0,n).map(c=>[NM[c],src[c][7]/1000]);
+bars('b-dia',topBy(MIG.emi,15),'var(--c-dia)');
+bars('b-dest',topBy(MIG.imm,12),'var(--c-dest)');
+bars('b-rem',REM,'var(--accent)','$');
+bars('f-cor',PAIRS.slice().sort((a,b)=>b.v[7]-a.v[7]).slice(0,20).map(p=>[NM[p.o]+' → '+NM[p.d],p.v[7]/1000]),'var(--c-dia)','2');
+// country explorer
+const sel=document.getElementById('cty');
+CODES.filter(c=>MIG.emi[c]||MIG.imm[c]).sort((a,b)=>NM[a].localeCompare(NM[b])).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=NM[c];sel.appendChild(o);});
+function fillExplorer(c){
+  c=+c; sel.value=c;
+  const out=ALLPAIRS.filter(p=>p.o==c).sort((a,b)=>b.v[7]-a.v[7]).slice(0,10).map(p=>[NM[p.d],p.v[7]]);
+  const inn=ALLPAIRS.filter(p=>p.d==c).sort((a,b)=>b.v[7]-a.v[7]).slice(0,10).map(p=>[NM[p.o],p.v[7]]);
+  bars('x-out',out.length?out:[['None above 30,000',0]],'var(--c-dia)','k');
+  bars('x-in',inn.length?inn:[['None above 30,000',0]],'var(--c-dest)','k');
+  const e=MIG.emi[c]||[0,0,0,0,0,0,0,0], i=MIG.imm[c]||[0,0,0,0,0,0,0,0];
+  document.getElementById('cty-sum').textContent=`${NM[c]}: ${fmtM(e[7])} born here live abroad (${fmtM(e[0])} in 1990) · ${fmtM(i[7])} residents were born elsewhere (${fmtM(i[0])} in 1990)`;
+}
+const clearBtns=[document.getElementById('clearmap'),document.getElementById('clearfocus')];
+function setFocus(c){
+  focus=c==null?null:+c; if(focus!=null) fillExplorer(focus);
+  clearBtns.forEach(b=>b.hidden=focus==null);
+  if(focus!=null&&s2y(s)>36){stop();animateTo(1);} else render(s2y(s));
+}
+sel.addEventListener('change',()=>fillExplorer(sel.value));
+document.getElementById('showmap').addEventListener('click',()=>{setFocus(sel.value);document.getElementById('mapbox').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});});
+clearBtns.forEach(b=>b.addEventListener('click',()=>setFocus(null)));
+fillExplorer(356);
+bars('b-send',SEND,'var(--c-vol)','$');
+document.getElementById('f-reg').innerHTML=REG.map(d=>`<div class="flow"><span>${d[0]}</span><span class="v">${d[1]}M</span><span class="meter" style="width:${d[1]/27*100}%"></span></div>`).join('');
+// stock line chart
+(function(){
+  const sv=d3.select('#stock'),m={l:34,r:14,t:14,b:24},w=360-m.l-m.r,h=170-m.t-m.b;
+  const x=d3.scaleLinear().domain([1970,2024]).range([m.l,m.l+w]), yv=d3.scaleLinear().domain([0,320]).range([m.t+h,m.t]);
+  [0,100,200,300].forEach(v=>{sv.append('line').attr('x1',m.l).attr('x2',m.l+w).attr('y1',yv(v)).attr('y2',yv(v)).attr('stroke','var(--line)');
+    sv.append('text').attr('x',m.l-6).attr('y',yv(v)+3).attr('text-anchor','end').attr('fill','var(--muted)').style('font','10px var(--mono)').text(v);});
+  [1970,1980,1990,2000,2010,2024].forEach(yr=>sv.append('text').attr('x',x(yr)).attr('y',m.t+h+16).attr('text-anchor','middle').attr('fill','var(--muted)').style('font','10px var(--mono)').text(yr));
+  sv.append('path').attr('d',d3.area().x(d=>x(d[0])).y0(yv(0)).y1(d=>yv(d[1]))(STOCK)).attr('fill','var(--accent)').attr('fill-opacity',.14);
+  sv.append('path').attr('d',d3.line().x(d=>x(d[0])).y(d=>yv(d[1]))(STOCK)).attr('fill','none').attr('stroke','var(--accent)').attr('stroke-width',2);
+  STOCK.forEach((d,i)=>{const lab=[0,4,8,11].includes(i);sv.append('circle').attr('cx',x(d[0])).attr('cy',yv(d[1])).attr('r',i===STOCK.length-1?4:2.5).attr('fill','var(--accent)');
+    sv.append('text').attr('x',x(d[0])+(i===STOCK.length-1?-4:0)).attr('y',yv(d[1])-8).attr('text-anchor',i===STOCK.length-1?'end':'middle').attr('fill','var(--ink)').style('font','500 10px var(--mono)').text(lab?Math.round(d[1]):'');});
+})();
+
+setS(s);
+})();
+</script>
+
+</body>
+</html>
